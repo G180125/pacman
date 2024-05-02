@@ -30,16 +30,24 @@ typedef struct {
     Size size;
     int current_frame;
     unsigned long* frames[7];
+    int reversed;
 } Pacman;
 
 typedef struct {
-    Point point;
+    Point point; //current pos
     Pixel_Position pixel_Position;
     Size size;
-    Point target;
+    Point target; //heading pos
     int radar_radius;
     unsigned long* image[1];
 } Ghost;
+
+//calculate distance between ghost and pacman < Minimum distance (50 pixel near 2,7 index)
+//ghost detected the pacman
+//change ghost->target = pacman->point
+
+//else 
+//change back to random
 
 const int SCREEN_WIDTH = 524;
 const int SCREEN_HEIGHT = 524;
@@ -59,10 +67,11 @@ typedef struct {
 int total_food = 220;
 int ghost_ability_to_move = 0;
 int end_game = 0;
+int reversed_time = 30;
 
 int map[ROWS][COLS] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 4, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+    {1, 4, 6, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
     {1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1},
     {1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1},
     {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
@@ -128,7 +137,8 @@ void main()
             pacman_frame_4,
             pacman_frame_5,
             pacman_frame_6
-        }
+        },
+        0
     };
 
     Ghost ghost_1 = {
@@ -225,6 +235,21 @@ void move_pacman(Pacman* pacman, char c)
 {   
     int pacman_old_x_position = pacman->pixel_position.x;
     int pacman_old_y_position = pacman->pixel_position.y;
+
+    // Check if Pacman is reversed
+    if (pacman->reversed == 1) {
+        // Reverse the direction based on user input index
+        if (c == 's') {
+            c = 'w';  // Reverse 's' to 'w'
+        } else if (c == 'w') {
+            c = 's';  // Reverse 'w' to 's'
+        } else if (c == 'a') {
+            c = 'd';  // Reverse 'a' to 'd'
+        } else if (c == 'd') {
+            c = 'a';  // Reverse 'd' to 'a'
+        } 
+    }
+
     if (c == 's')
     {   
         //if the pacman is in the last row
@@ -329,6 +354,14 @@ void move_pacman(Pacman* pacman, char c)
         total_food -= 1;
     }
 
+    //if the pacman has eaten a reversed
+    if (map[pacman->point.row][pacman->point.col] == 6)
+    {   
+        //decrease the total food 
+        pacman->reversed = 1;
+
+    }
+
     //mark the new position of pacman on the map
     map[pacman->point.row][pacman->point.col] = 4;
 
@@ -378,6 +411,10 @@ void draw_map(){
                 int food_start_y = (start_y + end_y) /2 - 3;
                 int food_end_y = (start_y + end_y) /2 + 3;
                 drawRectARGB32(food_start_x, food_start_y, food_end_x, food_end_y, 0xFFFFAA88,1);
+            } else if (map[i][j] == 6){ //reversed food
+                int food_start_x = (start_x + end_x) / 2 - 8;
+                int food_start_y = (start_y + end_y) /2 - 8;
+                drawObjectARGB32(food_start_x, food_start_y, 16, 16, reverse_food);
             } else { //outside maze zone
                 //drawing a black rectangle
                 drawRectARGB32(start_x , start_y , end_x, end_y, 0xFF000000,1);
@@ -424,6 +461,12 @@ void game(Pacman pacman, Ghost ghost_1, Ghost ghost_2){
 
     while (1)
     {   
+        if(pacman.reversed == 1){
+            clock(&reversed_time);
+            if(reversed_time == 0){
+                pacman.reversed = 0;
+            }
+        }
         set_wait_timer(1, 1000);
         //animate the pacman 
         draw_pacman(&pacman);

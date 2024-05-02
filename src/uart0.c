@@ -223,8 +223,28 @@ void set_wait_timer(int set, unsigned int msVal)
     }
 }
 
-unsigned long get_current_time() {
-    register unsigned long time;
-    asm volatile("mrs %0, cntpct_el0" : "=r"(time));
-    return time;
+unsigned long get_current_count() {
+    register unsigned long count;
+    asm volatile("mrs %0, cntpct_el0" : "=r"(count));
+    return count;
+}
+
+void clock(int* time) {
+    static unsigned long last_time = 0; // Remember the last time clock() was called
+
+    register unsigned long f, t, current_time;
+    // Get the current counter frequency (Hz)
+    asm volatile("mrs %0, cntfrq_el0" : "=r"(f));
+    // Read the current counter value
+    asm volatile("mrs %0, cntpct_el0" : "=r"(t));
+
+    // Calculate the current time
+    current_time = t / (f / 1000); // Convert cycles to milliseconds
+
+    // If one second has passed since the last call
+    if (current_time - last_time >= 1000) {
+        (*time)--;
+        // Update last_time to current_time
+        last_time = current_time;
+    }
 }
