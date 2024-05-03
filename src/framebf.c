@@ -153,7 +153,7 @@ void drawCharARGB32(int x, int y, char ch, unsigned int attr) {
             for (int row = 0; row < FONT_HEIGHT; row++) {
                 unsigned char line = glyph[row];
                 for (int col = 0; col < FONT_WIDTH; col++) {
-                    if (line & (1 << (FONT_WIDTH - col - 1))) {
+                    if (line & (1 << (col))) {
                         drawPixelARGB32(x + col, y + row, attr); // Draw the pixel
                     }
                 }

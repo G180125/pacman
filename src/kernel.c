@@ -117,10 +117,10 @@ void main()
     // Initialize frame buffer
     framebf_init();
     // Draw something on the screen
-    // drawStringARGB32(50, 50, "Nguyen Vi Phi Long - s3904632", 0x0000BB00);
-    // drawStringARGB32(100, 100, "Nguyen Minh Hung - s3924473", 0x00AA0000);
-    // drawStringARGB32(150, 150, "Le Tran Minh Trung - s3927071", 0x000000CC);
-    // drawStringARGB32(200, 200, "Huynh Tan Phat - s3926661", 0x00FFFF00);
+ //drawStringARGB32(50, 50, "Nguyen Vi Phi Long - s3904632", 0x0000BB00);
+   //  drawStringARGB32(100, 100, "Nguyen Minh Hung - s3924473", 0x00AA0000);
+     //drawStringARGB32(150, 150, "Le Tran Minh Trung - s3927071", 0x000000CC);
+     //drawStringARGB32(200, 200, "Huynh Tan Phat - s3926661", 0x00FFFF00);
 
     uart_puts("\nGroup7> ");
 
@@ -191,6 +191,7 @@ void main()
     //     // }
 
     // }
+    
 }
 
 void handle_delete()
