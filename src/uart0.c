@@ -228,3 +228,11 @@ unsigned long get_current_time() {
     asm volatile("mrs %0, cntpct_el0" : "=r"(time));
     return time;
 }
+
+void deleteChar()
+{ // Delete the character on the terminal
+
+    uart_sendc(8);  // send back to terminal
+    uart_sendc(32); // send back to terminal
+    uart_sendc(8);  // send back to terminal
+}
