@@ -106,8 +106,17 @@ void drawRectARGB32(int x1, int y1, int x2, int y2, unsigned int attr, int fill)
         {
             if ((x == x1 || x == x2) || (y == y1 || y == y2))
                 drawPixelARGB32(x, y, attr);
+            else if (fill == 2)
+            {
+                if ((y % 2 == 0 && x % 2 == 0) || (y % 2 != 0 && x % 2 != 0))
+                {
+                    drawPixelARGB32(x, y, attr);
+                }
+            }
             else if (fill)
+            {
                 drawPixelARGB32(x, y, attr);
+            }
         }
 }
 void drawCircleARGB32(int x, int y, int r) {

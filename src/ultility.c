@@ -10,23 +10,6 @@ int string_length(const char *str){
     return length;
 }
 
-int compare_strings(const char *str1, const char *str2) {
-    while (*str1 && *str2) {
-        if (*str1 != *str2) {
-            return 1; // Strings are different
-        }
-        str1++;
-        str2++;
-    }
-    
-    // Check if both strings have reached the end simultaneously
-    if (*str1 == '\0' && *str2 == '\0') {
-        return 0; // Strings are equal
-    } else {
-        return 1; // Strings are different lengths
-    }
-}
-
 int get_font_index(char character) {
     int ascii_value = (int)character;
     // Check if the character is within the ASCII range of your font
@@ -69,3 +52,29 @@ unsigned int random_number() {
     return seed;
 }
 
+int distance_square(int x0, int y0, int x1, int y1) {
+    return (x1-x0) * (x1-x0) + (y1-y0) * (y1-y0);
+}
+
+// Function to swap two elements in the array
+void swap(PriorityQueue *a, PriorityQueue *b) {
+    PriorityQueue temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Bubble sort function to sort the array of structs
+void bubbleSort(PriorityQueue arr[], int n) {
+    for (int i = 0; i < n-1; i++) {
+        for (int j = 0; j < n-i-1; j++) {
+            // Compare first variables
+            if (arr[j].distance < arr[j+1].distance) {
+                swap(&arr[j], &arr[j+1]);
+            }
+            // If first variables are equal, compare second variables
+            else if (arr[j].distance == arr[j+1].distance && arr[j].direction < arr[j+1].direction) {
+                swap(&arr[j], &arr[j+1]);
+            }
+        }
+    }
+}
