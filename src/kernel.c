@@ -640,9 +640,9 @@ void move_ghost(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost
         blinky->target_position.col = pacman->point.col;
         move_ghost_execute(blinky);
 
-        // Clyde -> Within 8 tiles around pacman -> chase like blinky; otherwise, scatter
+        // Clyde -> outside 8 tiles around pacman -> chase like blinky; otherwise, scatter
         int distance_to_pacman = distance_square(clyde->point.row, clyde->point.col, pacman->point.row, pacman->point.col);
-        if (distance_to_pacman < 64)
+        if (distance_to_pacman > 64)
         {
             clyde->target_position.row = pacman->point.row;
             clyde->target_position.col = pacman->point.col;
