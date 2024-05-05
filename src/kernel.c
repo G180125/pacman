@@ -579,30 +579,29 @@ void draw_map()
 }
 
 void draw_pacman(Pacman *pacman)
-{
-    // // Define the duration (in milliseconds) between each frame update
-    // const unsigned int frame_duration_ms = 2000;
-    // set_wait_timer(1, frame_duration_ms);
-
-    // // Update the frame
-    // if (pacman->current_frame < 6)
-    // {
-    //     pacman->current_frame++;
-    // }
-    // else
-    // { // reset the frame
-    //     pacman->current_frame = 0;
-    // }
-
-    // // Animate the pacman
-    // // Delete the old frame
-    // // Draw the current frame
-    // clearObject(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height);
-    // drawObjectARGB32(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height, pacman->frames[pacman->current_frame]);
-
-    // set_wait_timer(0, frame_duration_ms);
+{   
+    // Define the duration (in milliseconds) between each frame update
+    const unsigned int frame_duration_ms = 10;
     clearObject(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height);
-    drawObjectARGB32(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height, pacman->frames[3]);
+    set_wait_timer(1, frame_duration_ms);
+
+    // Update the frame
+    if (pacman->current_frame < 6)
+    {
+        pacman->current_frame++;
+    }
+    else
+    { // reset the frame
+        pacman->current_frame = 0;
+    }
+
+    // Animate the pacman
+    // Delete the old frame
+    // Draw the current frame
+    clearObject(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height);
+    drawObjectARGB32(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height, pacman->frames[pacman->current_frame]);
+
+    set_wait_timer(0, frame_duration_ms);
 }
 
 void draw_ghost(Ghost *ghost)
