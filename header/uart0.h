@@ -159,7 +159,6 @@
 
 /* Function prototypes */
 void uart_init();
-void deleteChar();
 void uart_sendc(char c);
 char uart_getc();
 void uart_float(float num);
@@ -171,3 +170,4 @@ unsigned char getUart();
 void wait_msec(unsigned int n);
 void set_wait_timer(int set, unsigned int msVal);
 unsigned long get_current_time();
+void clock(int* time);
