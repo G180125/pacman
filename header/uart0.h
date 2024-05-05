@@ -159,6 +159,7 @@
 
 /* Function prototypes */
 void uart_init();
+void deleteChar();
 void uart_sendc(char c);
 char uart_getc();
 void uart_float(float num);

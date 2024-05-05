@@ -13,4 +13,5 @@ int calculate_distance(int x1, int y1, int x2, int y2);
 unsigned int random_number();
 int distance_square(int x0, int y0, int x1, int y1);
 void bubbleSort(PriorityQueue arr[], int n);
-
+int stringcompare(char *a, char *b);
+void copyArray(int t[], int s[]);

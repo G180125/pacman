@@ -6,14 +6,14 @@
 #include "queue.h"
 #include "image.h"
 
-#define BUFFER_SIZE 256
 #define ROWS 23
 #define COLS 22
 #define MAX_SIZE 500
-
-char buffer[BUFFER_SIZE];
-int buffer_index = 0;
-
+#define preText "Group7> "
+char *buffer = "";    // buffer string for input
+int buffer_index = 0; // index for buffer string
+int case_one = 0;     // flag for case 1 (image viewer)
+int restart_flag = 0; // restart flag for game
 typedef struct
 {
     int x;
@@ -62,7 +62,59 @@ typedef struct
     int score;
     int game_status;
 } Game;
+Pacman pacman = {
+    {1, 1},
+    {36, 35},
+    {20, 20},
+    0,
+    -1,
+    {pacman_frame_0,
+     pacman_frame_1,
+     pacman_frame_2,
+     pacman_frame_3,
+     pacman_frame_4,
+     pacman_frame_5,
+     pacman_frame_6}};
 
+Ghost pinky = {
+    {10, 9},
+    {237, 252},
+    {22, 20},
+    {-4, 2},
+    {0, 0},
+    0,
+    -1,
+    {pinky_frame}};
+
+Ghost blinky = {
+    {10, 11},
+    {287, 252},
+    {22, 20},
+    {-4, 20},
+    {0, 0},
+    0,
+    -1,
+    {blinky_frame}};
+
+Ghost clyde = {
+    {11, 9},
+    {237, 275},
+    {22, 20},
+    {23, 0},
+    {0, 0},
+    0,
+    -1,
+    {clyde_frame}};
+
+Ghost inky = {
+    {11, 11},
+    {287, 275},
+    {22, 20},
+    {23, 22},
+    {0, 0},
+    0,
+    -1,
+    {inky_frame}};
 // GAME INFO
 int scatter_mode = 1;
 int chase_mode = 0;
@@ -70,7 +122,7 @@ int total_food = 220;
 int is_all_out_of_house = 0;
 int end_game = 0;
 
-int map[ROWS][COLS] = {
+int original_map[ROWS][COLS] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 4, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
     {1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1},
@@ -95,9 +147,8 @@ int map[ROWS][COLS] = {
     {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 
-void handle_delete();
-void handle_enter();
-void execute_command(char *command);
+int map[ROWS][COLS];
+
 void move_image(char c, int flag);
 void draw_map();
 void draw_pacman(Pacman *pacman);
@@ -107,111 +158,175 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky);
 int is_caught(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky);
 void move_ghost_execute(Ghost *ghost);
 void move_ghost(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky);
+void intro();
+void clear();
+
+void process(char *input);
 
 void main()
 {
     // set up serial console
     uart_init();
     // say hello
-    uart_puts("\n\nHello World!\n");
+    uart_puts("\n\nWELCOME TO GROUP 7 BARE OS, CHECK THE MONITOR FOR INSTRUCTION\n");
     // Initialize frame buffer
     framebf_init();
-    // Draw something on the screen
- //drawStringARGB32(50, 50, "Nguyen Vi Phi Long - s3904632", 0x0000BB00);
-   //  drawStringARGB32(100, 100, "Nguyen Minh Hung - s3924473", 0x00AA0000);
-     //drawStringARGB32(150, 150, "Le Tran Minh Trung - s3927071", 0x000000CC);
-     //drawStringARGB32(200, 200, "Huynh Tan Phat - s3926661", 0x00FFFF00);
+    intro();
 
-    uart_puts("\nGroup7> ");
+    uart_puts("\n" preText);
 
-    Pacman pacman = {
-        {1, 1},
-        {36, 35},
-        {20, 20},
-        0,
-        -1,
-        {pacman_frame_0,
-         pacman_frame_1,
-         pacman_frame_2,
-         pacman_frame_3,
-         pacman_frame_4,
-         pacman_frame_5,
-         pacman_frame_6}};
+    while (1)
+    {
+        // read each char
+        char c = uart_getc();
+        if (c == 8) // if character is backspace
+        {
 
-    Ghost pinky = {
-        {10, 9},
-        {237, 252},
-        {22, 20},
-        {-4, 2},
-        {0, 0},
-        0,
-        -1,
-        {pinky_frame}};
+            if (buffer_index > 0)
+            {
+                deleteChar();
 
-    Ghost blinky = {
-        {10, 11},
-        {287, 252},
-        {22, 20},
-        {-4, 20},
-        {0, 0},
-        0,
-        -1,
-        {blinky_frame}};
+                *(buffer + buffer_index) = '\0'; // endline
+                buffer_index--;
+            }
+        }
+        else if (c == 10) // if character is endline
+        {
+            ///////////////
+            *(buffer + buffer_index) = '\0'; // endline
+            process(buffer);                 // Input processing
+            ///////////////////////////
+            uart_puts("\n" preText);
+            for (int i = 0; i < buffer_index; i++) // Clear the the buffer
+            {
+                buffer[i] = ' ';
+            }
+            buffer_index = 0;
+        }
 
-    Ghost clyde = {
-        {11, 9},
-        {237, 275},
-        {22, 20},
-        {23, 0},
-        {0, 0},
-        0,
-        -1,
-        {clyde_frame}};
-
-    Ghost inky = {
-        {11, 11},
-        {287, 275},
-        {22, 20},
-        {23, 22},
-        {0, 0},
-        0,
-        -1,
-        {inky_frame}};
-
-        game(pacman, pinky, blinky, clyde, inky);
-
-    // while (1)
-    // {
-    //     // drawImageARGB32(0, 0, x_index, y_index, image);
-    //     // int flag = 1;
-
-    //     // while(flag == 1){
-    //     //     char c1 = getUart();
-    //     //     move_image(c1, flag);
-    //     // }
-
-    // }
-    
+        else
+        {
+            uart_sendc(c); // send back to terminal
+            *(buffer + buffer_index) = c;
+            buffer_index++;
+        }
+    }
 }
 
-void handle_delete()
+void intro()
 {
-    // Move buffer index back
-    buffer_index--;
+    clearScreen();
+    // Draw something on the screen
+    drawStringARGB32(0, 50, "Nguyen Vi Phi Long - s3904632", 0x0000BB00);
+    drawStringARGB32(0, 100, "Nguyen Minh Hung - s3924473", 0x00AA0000);
+    drawStringARGB32(300, 50, "Le Tran Minh Trung - s3927071", 0x000000CC);
+    drawStringARGB32(300, 100, "Huynh Tan Phat - s3926661", 0x00FFFF00);
+    drawStringARGB32(150, 300, "Press 1 for Image Viewing", 0x00FFFFFF);
+    drawStringARGB32(150, 400, "Press 2 for Video Watching", 0xF2a08B);
+    drawStringARGB32(150, 500, "Press 3 for Gaming", 0x00FFFF00);
+}
 
-    // Erase last character from console
-    uart_puts("\b \b");
+void process(char *input)
+{
 
-    // Shift characters after deleted character one position to the left
-    for (int i = buffer_index; i < BUFFER_SIZE - 1; i++)
+    //////////////////////////////////////////////////////////////////
+    if (stringcompare(buffer, "1") == 0)
     {
-        buffer[i] = buffer[i + 1];
+        uart_puts("\n");
+
+        clearScreen();
+        case_one = 1;
+        buffer_index = 0;
+        buffer = " "; // reset buffer
+        uart_puts("Image Viewer activated, type Exit anytime to exit out of this feature");
+
+        while (case_one == 1)
+        {
+            uart_puts("\n" preText);
+            drawImageARGB32(0, 0, x_index, y_index, image);
+            int flag = 1;
+
+            while (flag == 1)
+            {
+
+                char c1 = getUart();
+                if (c1 == 10)
+                {
+                    *(buffer + buffer_index) = '\0';        // endline
+                    if (stringcompare(buffer, "exit") == 0) // clean up here
+                    {
+
+                        clearScreen();
+                        case_one = 0;
+                        flag = 0;
+
+                        uart_puts("\nThank you for viewing our image\n");
+                        intro();
+
+                        break;
+                    }
+                    else
+                    {
+                        uart_puts("\nError: Unidentified command");
+                    }
+                }
+                else
+                {
+                    move_image(c1, flag);
+                    if (c1 != 'w' && c1 != 'a' && c1 != 's' && c1 != 'd')
+                    {
+                        uart_sendc(c1); // send back to terminal
+                        *(buffer + buffer_index) = c1;
+                        buffer_index++;
+                    }
+                }
+            }
+        }
     }
 
-    // Null terminate the last character in the buffer
-    buffer[BUFFER_SIZE - 1] = '\0';
+    ///////////////////////////////////////////////////////////////
+    else if (stringcompare(buffer, "3") == 0 || stringcompare(buffer, "replay") == 0)
+    {
+
+        for (int i = 0; i < ROWS; i++)
+        {
+            for (int k = 0; k < COLS; k++)
+            {
+                map[i][k] = original_map[i][k];
+            }
+        }
+        //////////////////////////////////////
+        clearScreen();
+
+        uart_puts("\nGame activated\n");
+
+        scatter_mode = 1;
+        chase_mode = 0;
+        total_food = 220;
+        is_all_out_of_house = 0;
+        end_game = 0;
+
+        game(pacman, pinky, blinky, clyde, inky);
+        uart_puts("\n Type exit to exit out of the game, restart to replay the game");
+    }
+    else if (stringcompare(buffer, "exit") == 0)
+    {
+        intro();
+    }
+    else if (stringcompare(buffer, "clear") == 0)
+    {
+        clear();
+    }
+    else
+    {
+        uart_puts("\nError: Unidentified command");
+    }
 }
 
+void clear()
+{
+    uart_puts("\e[1;1H\e[2J"); // clear
+}
 void move_image(char c, int flag)
 {
     if (c == 's')
@@ -414,10 +529,10 @@ void draw_map()
                 // draw a bule rectangal
                 drawRectARGB32(start_x, start_y, end_x, end_y, 0x000000CC, 2);
             }
-            else if (map[i][j] == 2 || map [i][j] == 6)
+            else if (map[i][j] == 2 || map[i][j] == 6)
             { // if this is a road
                 // draw a black rectangle
-                //drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
+                // drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
 
                 // draw the food
                 // the food is place in the middle of the reactangle
@@ -471,6 +586,7 @@ void draw_ghost(Ghost *ghost)
 
 void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 {
+
     // draw the map
     draw_map();
     int cnt = 0;
