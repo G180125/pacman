@@ -10,6 +10,34 @@ int string_length(const char *str){
     return length;
 }
 
+// Comparing both the strings using pointers
+int stringcompare(char *a, char *b)
+{
+    int flag = 0;
+    int index = 0;
+    if (string_length(a) != string_length(b))
+    { // IF THE LENGTH IS NOT THE SAME
+        return 1;
+    }
+    while (a[index] != '\0' && b[index] != '\0') // while loop
+    {
+        if (a[index] != b[index])
+        {
+            flag = 1;
+            break;
+        }
+        index++;
+    }
+
+    if (flag == 0)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
 int get_font_index(char character) {
     int ascii_value = (int)character;
     // Check if the character is within the ASCII range of your font
