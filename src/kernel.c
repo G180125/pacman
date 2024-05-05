@@ -13,6 +13,7 @@
 char *buffer = "";    // buffer string for input
 int buffer_index = 0; // index for buffer string
 int case_one = 0;     // flag for case 1 (image viewer)
+int restart_flag = 0; // restart flag for game
 typedef struct
 {
     int x;
@@ -121,7 +122,7 @@ int total_food = 220;
 int is_all_out_of_house = 0;
 int end_game = 0;
 
-int map[ROWS][COLS] = {
+int original_map[ROWS][COLS] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 4, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
     {1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1},
@@ -146,6 +147,8 @@ int map[ROWS][COLS] = {
     {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 
+int map[ROWS][COLS];
+
 void move_image(char c, int flag);
 void draw_map();
 void draw_pacman(Pacman *pacman);
@@ -159,8 +162,6 @@ void intro();
 void clear();
 
 void process(char *input);
-
-
 
 void main()
 {
@@ -189,14 +190,14 @@ void main()
                 buffer_index--;
             }
         }
-        else if (c == 10)
+        else if (c == 10) // if character is endline
         {
             ///////////////
             *(buffer + buffer_index) = '\0'; // endline
-            process(buffer); //Input processing
+            process(buffer);                 // Input processing
             ///////////////////////////
             uart_puts("\n" preText);
-            for (int i = 0; i < buffer_index; i++)
+            for (int i = 0; i < buffer_index; i++) // Clear the the buffer
             {
                 buffer[i] = ' ';
             }
@@ -214,6 +215,7 @@ void main()
 
 void intro()
 {
+    clearScreen();
     // Draw something on the screen
     drawStringARGB32(0, 50, "Nguyen Vi Phi Long - s3904632", 0x0000BB00);
     drawStringARGB32(0, 100, "Nguyen Minh Hung - s3924473", 0x00AA0000);
@@ -226,6 +228,7 @@ void intro()
 
 void process(char *input)
 {
+
     //////////////////////////////////////////////////////////////////
     if (stringcompare(buffer, "1") == 0)
     {
@@ -280,15 +283,35 @@ void process(char *input)
             }
         }
     }
+
     ///////////////////////////////////////////////////////////////
-    else if (stringcompare(buffer, "3") == 0)
+    else if (stringcompare(buffer, "3") == 0 || stringcompare(buffer, "replay") == 0)
     {
 
+        for (int i = 0; i < ROWS; i++)
+        {
+            for (int k = 0; k < COLS; k++)
+            {
+                map[i][k] = original_map[i][k];
+            }
+        }
+        //////////////////////////////////////
         clearScreen();
 
         uart_puts("\nGame activated\n");
 
+        scatter_mode = 1;
+        chase_mode = 0;
+        total_food = 220;
+        is_all_out_of_house = 0;
+        end_game = 0;
+
         game(pacman, pinky, blinky, clyde, inky);
+        uart_puts("\n Type exit to exit out of the game, restart to replay the game");
+    }
+    else if (stringcompare(buffer, "exit") == 0)
+    {
+        intro();
     }
     else if (stringcompare(buffer, "clear") == 0)
     {
@@ -563,6 +586,7 @@ void draw_ghost(Ghost *ghost)
 
 void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 {
+
     // draw the map
     draw_map();
     int cnt = 0;
