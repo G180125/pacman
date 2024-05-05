@@ -228,9 +228,13 @@ void intro()
 
 void process(char *input)
 {
-
+    if (stringcompare(buffer, "exit") == 0)
+    {
+        intro();
+        restart_flag = 0;
+    }
     //////////////////////////////////////////////////////////////////
-    if (stringcompare(buffer, "1") == 0)
+    else if (stringcompare(buffer, "1") == 0)
     {
         uart_puts("\n");
 
@@ -285,9 +289,8 @@ void process(char *input)
     }
 
     ///////////////////////////////////////////////////////////////
-    else if (stringcompare(buffer, "3") == 0 || stringcompare(buffer, "replay") == 0)
+    else if (stringcompare(buffer, "3") == 0 || restart_flag == 1)
     {
-
         for (int i = 0; i < ROWS; i++)
         {
             for (int k = 0; k < COLS; k++)
@@ -307,12 +310,10 @@ void process(char *input)
         end_game = 0;
 
         game(pacman, pinky, blinky, clyde, inky);
-        uart_puts("\n Type exit to exit out of the game, restart to replay the game");
+        restart_flag = 1;
+        uart_puts("\n Type exit to exit out of the game, any button to replay the game");
     }
-    else if (stringcompare(buffer, "exit") == 0)
-    {
-        intro();
-    }
+
     else if (stringcompare(buffer, "clear") == 0)
     {
         clear();
