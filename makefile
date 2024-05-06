@@ -5,7 +5,7 @@ OBJDIR = build
 HEADER := -I ./header
 CFILES = $(wildcard $(SRCDIR)/*.c)
 OFILES := $(subst $(SRCDIR),$(OBJDIR),$(CFILES:.c=.o))
-GCCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib
+GCCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib 
 
 all: clean uart0_build kernel8.img
 mac: clean_mac uart0_build kernel8.img
