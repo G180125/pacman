@@ -58,7 +58,7 @@ typedef struct
     Point target_position;
     int is_move;
     int previous_move;
-    int is_eaten;
+    int status;
     unsigned long *image[1];
 } Ghost;
 
@@ -90,7 +90,6 @@ Pacman pacman = {
      pacman_frame_5,
      pacman_frame_6}};
 
-Pacman pacman;
 Ghost pinky = {
     {10, 9},
     {237, 252},
@@ -98,7 +97,7 @@ Ghost pinky = {
     {-4, 2},
     {0, 0},
     0,
-    -1,
+    0,
     0,
     {pinky_frame}};
 
@@ -109,7 +108,7 @@ Ghost blinky = {
     {-4, 20},
     {0, 0},
     0,
-    -1,
+    0,
     0,
     {blinky_frame}};
 
@@ -120,7 +119,7 @@ Ghost clyde = {
     {23, 0},
     {0, 0},
     0,
-    -1,
+    0,
     0,
     {clyde_frame}};
 
@@ -131,7 +130,7 @@ Ghost inky = {
     {23, 22},
     {0, 0},
     0,
-    -1,
+    0,
     0,
     {inky_frame}};
 // GAME INFO
@@ -141,7 +140,8 @@ int frighten_mode = 0;
 int total_food = 220;
 int is_all_out_of_house = 0;
 int end_game = 0;
-    int cnt = 0;
+int cnt = 0;
+Point gate = {9, 10};
 
 int original_map[ROWS][COLS] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -187,22 +187,24 @@ int map[ROWS][COLS];
 void move_image(char c, int flag);
 void draw_map();
 void draw_pacman(Pacman *pacman);
-void move_pacman(Pacman *pacman, char c);
+void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky, char c);
 void draw_food_after_ghosts_move(Ghost *ghost);
 void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky);
 int is_caught(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky);
-void draw_frightened_ghost(Ghost *ghost);
+int is_eaten(Pacman pacman, Ghost *ghost);
 void draw_ghost(Ghost *ghost);
-void move_ghost_execute(Ghost *ghost);
+void move_ghost_execute(Pacman *pacman, Ghost *ghost);
 void move_ghost(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky);
+void move_ghost_scatter(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky);
+void move_ghost_chase(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky);
+void move_ghost_frighten(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky);
 int random_move(Ghost *ghost, int direction);
 void ghost_turn_around(Ghost *ghost);
-void all_ghosts_turn_around();
+void enable_frighten_mode(Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky);
 void intro();
 void clear();
 void process(char *input);
-void handle_special_food(Pacman *pacman, Ghost *pinky);
-
+void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky);
 void main()
 {
     // set up serial console
@@ -412,7 +414,7 @@ void move_image(char c, int flag)
     }
 }
 
-void move_pacman(Pacman *pacman, char c)
+void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky, char c)
 {
     int pacman_old_x_position = pacman->pixel_position.x;
     int pacman_old_y_position = pacman->pixel_position.y;
@@ -569,7 +571,6 @@ void move_pacman(Pacman *pacman, char c)
     {
         pacman->special_foods.active++;
         pacman->special_foods.power_up = 1;
-        all_ghosts_turn_around();
     }
 
     // mark the new position of pacman on the map
@@ -803,14 +804,22 @@ void draw_pacman(Pacman *pacman)
 
 void draw_ghost(Ghost *ghost)
 {
-    // drawCircleARGB32(ghost_1_x_position + (GHOST_WIDTH / 2), ghost_1_y_position + (GHOST_HEIGHT /2), ghost_radar_radius);
-    drawObjectARGB32(ghost->pixel_position.x, ghost->pixel_position.y, ghost->size.width, ghost->size.height, ghost->image[0]);
-}
-
-void draw_frightened_ghost(Ghost *ghost)
-{
-    // drawCircleARGB32(ghost_1_x_position + (GHOST_WIDTH / 2), ghost_1_y_position + (GHOST_HEIGHT /2), ghost_radar_radius);
-    drawObjectARGB32(ghost->pixel_position.x, ghost->pixel_position.y, ghost->size.width, ghost->size.height, frightened_ghost_frame);
+    if (ghost->status != 0)
+    {
+        if (ghost->status == 1)
+        {
+            drawObjectARGB32(ghost->pixel_position.x, ghost->pixel_position.y, ghost->size.width, ghost->size.height, frightened_ghost_frame);
+        }
+        else
+        {
+            drawObjectARGB32(ghost->pixel_position.x, ghost->pixel_position.y, ghost->size.width, ghost->size.height, eaten_ghost_frame);
+        }
+    }
+    else
+    {
+        // drawCircleARGB32(ghost_1_x_position + (GHOST_WIDTH / 2), ghost_1_y_position + (GHOST_HEIGHT /2), ghost_radar_radius);
+        drawObjectARGB32(ghost->pixel_position.x, ghost->pixel_position.y, ghost->size.width, ghost->size.height, ghost->image[0]);
+    }
 }
 
 void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
@@ -824,7 +833,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 
     while (1)
     {
-        handle_special_food(&pacman, &pinky);
+        handle_special_food(&pacman, &pinky, &blinky, &clyde, &inky);
 
         set_wait_timer(1, 10);
         // animate the pacman
@@ -848,12 +857,17 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             end_game = 1;
         }
 
+        is_eaten(pacman, &pinky);
+        is_eaten(pacman, &blinky);
+        is_eaten(pacman, &clyde);
+        is_eaten(pacman, &inky);
+
         // if there is an input key
         if (uart_isReadByteReady() == 0)
         {
             // get the input and execute
             char c = uart_getc();
-            move_pacman(&pacman, c);
+            move_pacman(&pacman, &pinky, &blinky, &clyde, &inky, c);
             if (pinky.is_move == 0)
             {
                 pinky.is_move = 1;
@@ -871,11 +885,9 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         if (is_all_out_of_house)
         {
             set_wait_timer(0, 10);
-            if (pacman.special_foods.power_up)
+            if (pacman.special_foods.power_up && !frighten_mode)
             {
-                frighten_mode = 1;
-                scatter_mode = 0;
-                chase_mode = 0;
+                enable_frighten_mode(&pinky, &blinky, &clyde, &inky);
             }
             if (pacman.special_foods.invisible)
             {
@@ -909,189 +921,231 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 
 int is_caught(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 {
-    return (pacman.point.row == pinky.point.row && pacman.point.col == pinky.point.col) ||
-           (pacman.point.row == blinky.point.row && pacman.point.col == blinky.point.col) ||
-           (pacman.point.row == clyde.point.row && pacman.point.col == clyde.point.col) ||
-           (pacman.point.row == inky.point.row && pacman.point.col == inky.point.col);
+    return ((pacman.point.row == pinky.point.row && pacman.point.col == pinky.point.col) ||
+            (pacman.point.row == blinky.point.row && pacman.point.col == blinky.point.col) ||
+            (pacman.point.row == clyde.point.row && pacman.point.col == clyde.point.col) ||
+            (pacman.point.row == inky.point.row && pacman.point.col == inky.point.col)) &&
+           (!frighten_mode);
+}
+
+int is_eaten(Pacman pacman, Ghost *ghost)
+{
+    if (ghost->status == 1)
+    {
+        if (pacman.point.row == ghost->point.row && pacman.point.col == ghost->point.col)
+        {
+            ghost->status = 2;
+            // Increase score
+
+            return 1;
+        }
+    }
+    return 0;
 }
 
 void move_ghost(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky)
 {
     set_wait_timer(1, 200000);
+
     if (scatter_mode)
     {
-        if (!is_all_out_of_house)
-        {
-            move_ghost_execute(pinky);
-            if (distance_square(blinky->point.row, blinky->point.col, pinky->point.row, pinky->point.col) > 30)
-            {
-                blinky->is_move = 1;
-            }
-            if (distance_square(blinky->point.row, blinky->point.col, clyde->point.row, clyde->point.col) > 30 && !clyde->is_move)
-            {
-                clyde->is_move = 1;
-                clyde->scatter_position.row = blinky->scatter_position.row;
-                clyde->scatter_position.col = blinky->scatter_position.col;
-            }
-            if (distance_square(clyde->point.row, clyde->point.col, inky->point.row, inky->point.col) > 10 && !inky->is_move)
-            {
-                inky->is_move = 1;
-                inky->scatter_position.row = blinky->scatter_position.row;
-                inky->scatter_position.col = blinky->scatter_position.col;
-            }
-            if (blinky->is_move)
-            {
-                move_ghost_execute(blinky);
-            }
-            if (clyde->is_move)
-            {
-                move_ghost_execute(clyde);
-                if (distance_square(clyde->point.row, clyde->point.col, blinky->scatter_position.row, blinky->scatter_position.col) < 200)
-                {
-                    clyde->scatter_position.row = 24;
-                    clyde->scatter_position.col = 0;
-                }
-            }
-            if (inky->is_move)
-            {
-                move_ghost_execute(inky);
-                if (distance_square(inky->point.row, inky->point.col, blinky->scatter_position.row, blinky->scatter_position.col) < 200)
-                {
-                    inky->scatter_position.row = 23;
-                    inky->scatter_position.col = 22;
-                    is_all_out_of_house = 1;
-                }
-            }
-        }
-        else
-        {
-            move_ghost_execute(pinky);
-            move_ghost_execute(blinky);
-            move_ghost_execute(clyde);
-            move_ghost_execute(inky);
-        }
+        move_ghost_scatter(pacman, pinky, blinky, clyde, inky);
     }
     else if (chase_mode)
     {
-        // Pinky -> 4 tiles a head pacman
-        switch (pacman->current_move)
-        {
-        case 0:
-            pinky->target_position.row = pacman->point.row - 4;
-            pinky->target_position.col = pacman->point.col - 4;
-            break;
-
-        case 1:
-            pinky->target_position.row = pacman->point.row;
-            pinky->target_position.col = pacman->point.col - 4;
-            break;
-
-        case 2:
-            pinky->target_position.row = pacman->point.row + 4;
-            pinky->target_position.col = pacman->point.col;
-            break;
-
-        default:
-            pinky->target_position.row = pacman->point.row;
-            pinky->target_position.col = pacman->point.col + 4;
-            break;
-        }
-        move_ghost_execute(pinky);
-
-        // Blinky -> Follow pacman
-        blinky->target_position.row = pacman->point.row;
-        blinky->target_position.col = pacman->point.col;
-        move_ghost_execute(blinky);
-
-        // Clyde -> outside 8 tiles around pacman -> chase like blinky; otherwise, scatter
-        int distance_to_pacman = distance_square(clyde->point.row, clyde->point.col, pacman->point.row, pacman->point.col);
-        if (distance_to_pacman > 64)
-        {
-            clyde->target_position.row = pacman->point.row;
-            clyde->target_position.col = pacman->point.col;
-        }
-        else
-        {
-            clyde->target_position.row = clyde->scatter_position.row;
-            clyde->target_position.col = clyde->scatter_position.col;
-        }
-        move_ghost_execute(clyde);
-
-        // Inky
-        Point intermidiate;
-        switch (pacman->current_move)
-        {
-        case 0:
-            intermidiate.row = pacman->point.row - 2;
-            intermidiate.col = pacman->point.col - 2;
-            break;
-
-        case 1:
-            intermidiate.row = pacman->point.row;
-            intermidiate.col = pacman->point.col - 2;
-            break;
-
-        case 2:
-            intermidiate.row = pacman->point.row + 2;
-            intermidiate.col = pacman->point.col;
-            break;
-
-        default:
-            intermidiate.row = pacman->point.row;
-            intermidiate.col = pacman->point.col + 2;
-            break;
-        }
-        inky->target_position.row = 2 * intermidiate.row - blinky->point.row;
-        inky->target_position.col = 2 * intermidiate.col - blinky->point.col;
-        move_ghost_execute(inky);
+        move_ghost_chase(pacman, pinky, blinky, clyde, inky);
     }
     else
     {
-        uart_puts("move pinky\n");
-        uart_dec(pinky->point.row);
-        uart_puts(" ");
-        uart_dec(pinky->point.col);
-        uart_puts("\n");
-
-        move_ghost_execute(pinky);
-                //uart_puts("move blinky\n");
-        move_ghost_execute(blinky);
-                //uart_puts("move clyde\n");
-
-        move_ghost_execute(clyde);
-                //uart_puts("move inky\n");
-
-        move_ghost_execute(inky);
+        move_ghost_frighten(pacman, pinky, blinky, clyde, inky);
     }
 
-    if (!frighten_mode)
-    {
-        draw_ghost(pinky);
-        draw_ghost(blinky);
-        draw_ghost(clyde);
-        draw_ghost(inky);
-    }
-    else
-    {
-        uart_puts("draw\n");
-        draw_frightened_ghost(pinky);
-        draw_frightened_ghost(blinky);
-        draw_frightened_ghost(clyde);
-        draw_frightened_ghost(inky);
-    }
+    draw_ghost(pinky);
+    draw_ghost(blinky);
+    draw_ghost(clyde);
+    draw_ghost(inky);
 
     set_wait_timer(1, 200000);
 }
 
-void all_ghosts_turn_around() {
-    pinky.previous_move = (pinky.previous_move - 2) < 0 ? pinky.previous_move + 2 : pinky.previous_move - 2;
-    blinky.previous_move = (blinky.previous_move - 2) < 0 ? blinky.previous_move + 2 : blinky.previous_move - 2;
-    clyde.previous_move = (clyde.previous_move - 2) < 0 ? clyde.previous_move + 2 : clyde.previous_move - 2;
-    inky.previous_move = (inky.previous_move - 2) < 0 ? inky.previous_move + 2 : inky.previous_move - 2;
+void move_ghost_scatter(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky)
+{
+    if (!is_all_out_of_house)
+    {
+        move_ghost_execute(pacman, pinky);
+        if (distance_square(blinky->point.row, blinky->point.col, pinky->point.row, pinky->point.col) > 30)
+        {
+            blinky->is_move = 1;
+        }
+        if (distance_square(blinky->point.row, blinky->point.col, clyde->point.row, clyde->point.col) > 30 && !clyde->is_move)
+        {
+            clyde->is_move = 1;
+            clyde->scatter_position.row = blinky->scatter_position.row;
+            clyde->scatter_position.col = blinky->scatter_position.col;
+        }
+        if (distance_square(clyde->point.row, clyde->point.col, inky->point.row, inky->point.col) > 10 && !inky->is_move)
+        {
+            inky->is_move = 1;
+            inky->scatter_position.row = blinky->scatter_position.row;
+            inky->scatter_position.col = blinky->scatter_position.col;
+        }
+        if (blinky->is_move)
+        {
+            move_ghost_execute(pacman, blinky);
+        }
+        if (clyde->is_move)
+        {
+            move_ghost_execute(pacman, clyde);
+            if (distance_square(clyde->point.row, clyde->point.col, blinky->scatter_position.row, blinky->scatter_position.col) < 200)
+            {
+                clyde->scatter_position.row = 24;
+                clyde->scatter_position.col = 0;
+            }
+        }
+        if (inky->is_move)
+        {
+            move_ghost_execute(pacman, inky);
+            if (distance_square(inky->point.row, inky->point.col, blinky->scatter_position.row, blinky->scatter_position.col) < 200)
+            {
+                inky->scatter_position.row = 23;
+                inky->scatter_position.col = 22;
+                is_all_out_of_house = 1;
+            }
+        }
+    }
+    else
+    {
+        move_ghost_execute(pacman, pinky);
+        move_ghost_execute(pacman, blinky);
+        move_ghost_execute(pacman, clyde);
+        move_ghost_execute(pacman, inky);
+    }
 }
 
-void ghost_turn_around(Ghost *ghost) {
-    ghost->previous_move = (ghost->previous_move - 2) < 0 ? ghost->previous_move + 2 : ghost->previous_move -2;
+void move_ghost_chase(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky)
+{
+    // Pinky -> 4 tiles a head pacman
+    switch (pacman->current_move)
+    {
+    case 0:
+        pinky->target_position.row = pacman->point.row - 4;
+        pinky->target_position.col = pacman->point.col - 4;
+        break;
+
+    case 1:
+        pinky->target_position.row = pacman->point.row;
+        pinky->target_position.col = pacman->point.col - 4;
+        break;
+
+    case 2:
+        pinky->target_position.row = pacman->point.row + 4;
+        pinky->target_position.col = pacman->point.col;
+        break;
+
+    default:
+        pinky->target_position.row = pacman->point.row;
+        pinky->target_position.col = pacman->point.col + 4;
+        break;
+    }
+    move_ghost_execute(pacman, pinky);
+
+    // Blinky -> Follow pacman
+    blinky->target_position.row = pacman->point.row;
+    blinky->target_position.col = pacman->point.col;
+    move_ghost_execute(pacman, blinky);
+
+    // Clyde -> outside 8 tiles around pacman -> chase like blinky; otherwise, scatter
+    int distance_to_pacman = distance_square(clyde->point.row, clyde->point.col, pacman->point.row, pacman->point.col);
+    if (distance_to_pacman > 64)
+    {
+        clyde->target_position.row = pacman->point.row;
+        clyde->target_position.col = pacman->point.col;
+    }
+    else
+    {
+        clyde->target_position.row = clyde->scatter_position.row;
+        clyde->target_position.col = clyde->scatter_position.col;
+    }
+    move_ghost_execute(pacman, clyde);
+
+    // Inky
+    Point intermidiate;
+    switch (pacman->current_move)
+    {
+    case 0:
+        intermidiate.row = pacman->point.row - 2;
+        intermidiate.col = pacman->point.col - 2;
+        break;
+
+    case 1:
+        intermidiate.row = pacman->point.row;
+        intermidiate.col = pacman->point.col - 2;
+        break;
+
+    case 2:
+        intermidiate.row = pacman->point.row + 2;
+        intermidiate.col = pacman->point.col;
+        break;
+
+    default:
+        intermidiate.row = pacman->point.row;
+        intermidiate.col = pacman->point.col + 2;
+        break;
+    }
+    inky->target_position.row = 2 * intermidiate.row - blinky->point.row;
+    inky->target_position.col = 2 * intermidiate.col - blinky->point.col;
+    move_ghost_execute(pacman, inky);
+}
+
+void move_ghost_frighten(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky)
+{
+    move_ghost_execute(pacman, pinky);
+    move_ghost_execute(pacman, blinky);
+    move_ghost_execute(pacman, clyde);
+    move_ghost_execute(pacman, inky);
+}
+
+void enable_frighten_mode(Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky)
+{
+    frighten_mode = 1;
+    scatter_mode = 0;
+    chase_mode = 0;
+    pinky->status = 1;
+    blinky->status = 1;
+    clyde->status = 1;
+    inky->status = 1;
+    pinky->previous_move = (pinky->previous_move - 2) < 0 ? pinky->previous_move + 2 : pinky->previous_move - 2;
+    blinky->previous_move = (blinky->previous_move - 2) < 0 ? blinky->previous_move + 2 : blinky->previous_move - 2;
+    clyde->previous_move = (clyde->previous_move - 2) < 0 ? clyde->previous_move + 2 : clyde->previous_move - 2;
+    inky->previous_move = (inky->previous_move - 2) < 0 ? inky->previous_move + 2 : inky->previous_move - 2;
+}
+
+void disable_frighten_mode(Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky)
+{
+    frighten_mode = 0;
+    scatter_mode = 1;
+    chase_mode = 0;
+    if (pinky->status == 1)
+    {
+        pinky->status = 0;
+    }
+    if (blinky->status == 1)
+    {
+        blinky->status = 0;
+    }
+    if (clyde->status == 1)
+    {
+        clyde->status = 0;
+    }
+    if (inky->status == 1)
+    {
+        inky->status = 0;
+    }
+}
+
+void ghost_turn_around(Ghost *ghost)
+{
+    ghost->previous_move = (ghost->previous_move - 2) < 0 ? ghost->previous_move + 2 : ghost->previous_move - 2;
 }
 
 // void back_to_house
@@ -1099,7 +1153,7 @@ void ghost_turn_around(Ghost *ghost) {
 void move_priority(Ghost *ghost, PriorityQueue (*arr)[])
 {
     int up_dis, left_dis, down_dis, right_dis;
-    if (scatter_mode)
+    if (scatter_mode && ghost->status == 0)
     {
         up_dis = distance_square(ghost->point.row - 1, ghost->point.col, ghost->scatter_position.row, ghost->scatter_position.col);
         left_dis = distance_square(ghost->point.row, ghost->point.col - 1, ghost->scatter_position.row, ghost->scatter_position.col);
@@ -1156,7 +1210,7 @@ void process_next_move(Ghost *ghost, PriorityQueue dis[])
         if (dis[i].direction == 1)
         {
             if (ghost->previous_move != 3 && ghost->point.col > 0 && map[ghost->point.row][ghost->point.col - 1] != 1 &&
-            map[ghost->point.row][ghost->point.col - 1] != 5)
+                map[ghost->point.row][ghost->point.col - 1] != 5)
             {
                 // move to the new position
                 // decreasing the collumn
@@ -1171,7 +1225,8 @@ void process_next_move(Ghost *ghost, PriorityQueue dis[])
 
         if (dis[i].direction == 2)
         {
-            if (ghost->previous_move != 0 && ghost->point.row < 23 && map[ghost->point.row + 1][ghost->point.col] != 1)
+            if (ghost->previous_move != 0 && ghost->point.row < 23 && map[ghost->point.row + 1][ghost->point.col] != 1 &&
+                (ghost->point.row + 1 != gate.row || ghost->point.col != gate.col || ghost->status != 1))
             {
                 // move to the new position
                 // increasing the row
@@ -1187,7 +1242,7 @@ void process_next_move(Ghost *ghost, PriorityQueue dis[])
 
         {
             if (ghost->previous_move != 1 && ghost->point.col < 22 && map[ghost->point.row][ghost->point.col + 1] != 1 &&
-            map[ghost->point.row][ghost->point.col + 1] != 5)
+                map[ghost->point.row][ghost->point.col + 1] != 5)
             {
                 // move to the new position
                 // increasing the collumn
@@ -1238,7 +1293,8 @@ int random_move(Ghost *ghost, int direction)
 
     if (direction == 2)
     {
-        if (ghost->previous_move != 0 && ghost->point.row < 23 && map[ghost->point.row + 1][ghost->point.col] != 1)
+        if (ghost->previous_move != 0 && ghost->point.row < 23 && map[ghost->point.row + 1][ghost->point.col] != 1 &&
+            (ghost->point.row + 1 != gate.row || ghost->point.col != gate.col))
         {
             // move to the new position
             // increasing the row
@@ -1268,14 +1324,57 @@ int random_move(Ghost *ghost, int direction)
     return 0;
 }
 
-void move_ghost_execute(Ghost *ghost)
+void move_ghost_execute(Pacman *pacman, Ghost *ghost)
 {
     // clearing the old ghost in the screen
     // draw back the food if there is one
     draw_food_after_ghosts_move(ghost);
 
-    if (!frighten_mode)
+    if (frighten_mode && ghost->status == 1)
     {
+        int move_cnt = 0;
+        while (1)
+        {
+            move_cnt++;
+            int random_direction = random_small_number() % 4;
+            if (random_move(ghost, random_direction))
+            {
+                return;
+            }
+            if (move_cnt > 20)
+            {
+                ghost_turn_around(ghost);
+                move_cnt = 0;
+            }
+        }
+    }
+    else
+    {
+        if (ghost->status > 1)
+        {
+            if (ghost->status == 2)
+            {
+                // uart_puts("To gate\n");
+                ghost->target_position.row = gate.row;
+                ghost->target_position.col = gate.col;
+                ghost->status = 3;
+            }
+            else if (ghost->point.row == gate.row && ghost->point.col == gate.col)
+            {
+                // uart_puts("To house\n");
+                ghost->target_position.row = gate.row + 2;
+                ghost->target_position.col = gate.col;
+            }
+            else if (ghost->point.row == gate.row + 2 && ghost->point.col != gate.col)
+            {
+                // uart_puts("Alive\n");
+                ghost->target_position.row = pacman->point.row;
+                ghost->target_position.col = pacman->point.col;
+                // ghost->target_position.row = gate.row;
+                // ghost->target_position.col = gate.col;
+                ghost->status = 0;
+            }             
+        }
         PriorityQueue descending_dis[4];
 
         // Find and sort the distance from surrounding tiles to the target (by distance and priority of directions)
@@ -1283,26 +1382,9 @@ void move_ghost_execute(Ghost *ghost)
 
         process_next_move(ghost, descending_dis);
     }
-    else
-    {
-        int move_cnt = 0;
-        while (1) {
-            move_cnt++;
-            int random_direction = random_small_number() % 4;
-            uart_dec(random_direction);
-            uart_puts("\n");
-            if (random_move(ghost, random_direction)) {
-                return;
-            }
-            if (move_cnt > 20) {
-                ghost_turn_around(ghost);
-                move_cnt = 0;
-            }
-        }
-    }
 }
 
-void handle_special_food(Pacman *pacman, Ghost *pinky)
+void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky)
 {
     static int reversed_time = 15;
     static int freeze_ghosts_time = 15;
@@ -1402,8 +1484,7 @@ void handle_special_food(Pacman *pacman, Ghost *pinky)
         clock(&power_up_time);
         if (!power_up_time)
         {
-            frighten_mode = 0;
-            scatter_mode = 1;
+            disable_frighten_mode(pinky, blinky, clyde, inky);
             power_up_time = 10; // Reset time for next time pacman eat that item
             clearObject(10 + x_offset * 40, 572, 32, 32);
             pacman->special_foods.active--;
