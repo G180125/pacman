@@ -921,11 +921,10 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 
 int is_caught(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 {
-    return ((pacman.point.row == pinky.point.row && pacman.point.col == pinky.point.col) ||
-            (pacman.point.row == blinky.point.row && pacman.point.col == blinky.point.col) ||
-            (pacman.point.row == clyde.point.row && pacman.point.col == clyde.point.col) ||
-            (pacman.point.row == inky.point.row && pacman.point.col == inky.point.col)) &&
-           (!frighten_mode);
+    return ((pacman.point.row == pinky.point.row && pacman.point.col == pinky.point.col && pinky.status == 0) ||
+            (pacman.point.row == blinky.point.row && pacman.point.col == blinky.point.col && blinky.status == 0) ||
+            (pacman.point.row == clyde.point.row && pacman.point.col == clyde.point.col && clyde.status == 0) ||
+            (pacman.point.row == inky.point.row && pacman.point.col == inky.point.col && inky.status == 0));
 }
 
 int is_eaten(Pacman pacman, Ghost *ghost)
