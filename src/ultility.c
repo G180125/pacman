@@ -1,6 +1,5 @@
 #include "ultility.h"
 #include "uart0.h"
-
 int string_length(const char *str){
     int length = 0;
     while (*str != '\0') {
@@ -80,6 +79,15 @@ unsigned int random_number() {
     return seed;
 }
 
+unsigned short lfsr = 0xACE1u;
+  unsigned bit;
+
+  unsigned random_small_number()
+  {
+    bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
+    return lfsr =  (lfsr >> 1) | (bit << 15);
+  }
+
 int distance_square(int x0, int y0, int x1, int y1) {
     return (x1-x0) * (x1-x0) + (y1-y0) * (y1-y0);
 }
@@ -105,4 +113,17 @@ void bubbleSort(PriorityQueue arr[], int n) {
             }
         }
     }
+}
+
+void *memcpy(void *restrict dest, const void *restrict src, size_t len)
+{
+    char *dp = (char *restrict)dest;
+    const char *sp = (const char *restrict)src;
+
+    while( len-- )
+    {
+        *dp++ = *sp++;
+    }
+
+    return dest;
 }

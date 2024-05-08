@@ -5,9 +5,10 @@ OBJDIR = build
 HEADER := -I ./header
 CFILES = $(wildcard $(SRCDIR)/*.c)
 OFILES := $(subst $(SRCDIR),$(OBJDIR),$(CFILES:.c=.o))
-GCCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib
+GCCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib 
 
 all: clean uart0_build kernel8.img
+mac: clean_mac uart0_build kernel8.img
 
 uart0_build: ./src/uart0.c
 	aarch64-none-elf-gcc $(GCCFLAGS) -c  $(HEADER) ./src/uart0.c -o ./build/uart.o
@@ -24,6 +25,9 @@ kernel8.img: ./build/boot.o $(OFILES)
 
 clean:
 	del .\build\kernel8.elf .\build\*.o *.img
+
+clean_mac:
+	rm -f .\build\kernel8.elf .\build\*.o *.img
 
 # Run emulation with QEMU FOR MAC
 run_mac: 
