@@ -855,6 +855,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         {
             uart_puts("\nGame Over");
             end_game = 1;
+            continue;
         }
 
         is_eaten(pacman, &pinky);
@@ -873,6 +874,17 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
                 pinky.is_move = 1;
             }
         }
+
+        if (is_caught(pacman, pinky, blinky, clyde, inky))
+        {
+            uart_puts("\nGame Over");
+            end_game = 1;
+            continue;
+        }
+        is_eaten(pacman, &pinky);
+        is_eaten(pacman, &blinky);
+        is_eaten(pacman, &clyde);
+        is_eaten(pacman, &inky);
 
         // if all the foods are eaten, dislay winning message and end the game.
         if (total_food == 0)
