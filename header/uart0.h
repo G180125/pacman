@@ -167,7 +167,7 @@ void uart_hex(unsigned int num);
 void uart_dec(int num);
 unsigned int uart_isReadByteReady();
 unsigned char getUart();
-void wait_msec(unsigned int n);
+void wait_msec(unsigned int msVal);
 void set_wait_timer(int set, unsigned int msVal);
 unsigned long get_current_time();
 void clock(int* time);
