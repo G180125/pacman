@@ -5,16 +5,42 @@
 #include "ultility.h"
 #include "queue.h"
 #include "image.h"
+#include "frame1-10.h"
+#include "frame11-20.h"
+#include "frame21-30.h"
+#include "frame31-40.h"
+#include "frame41-50.h"
+#include "frame51-60.h"
+#include "frame61-70.h"
+#include "frame71-80.h"
+#include "frame81-90.h"
+#include "frame91-100.h"
+#include "frame101-110.h"
+#include "frame111-120.h"
+#include "frame121-130.h"
+#include "frame131-140.h"
+#include "frame141-146.h"
 
 #define ROWS 23
 #define COLS 22
 #define MAX_SIZE 500
 #define preText "Group7> "
+
+#define FRAME_WIDTH 640
+#define FRAME_HEIGHT 480
+
+// Define the number of frames
+#define NUM_FRAMES 15
+
 char *buffer = "";    // buffer string for input
 int buffer_index = 0; // index for buffer string
 int case_one = 0;     // flag for case 1 (image viewer)
 int restart_flag = 0; // restart flag for game
 
+
+const int FPS = 3; // Frames per second
+unsigned long frame_data[NUM_FRAMES][FRAME_WIDTH * FRAME_HEIGHT];
+//Games
 typedef struct
 {
     int x;
@@ -29,19 +55,8 @@ typedef struct
 
 typedef struct
 {
-    int active;
-    int freeze_ghosts;
-    int reversed;
-    int double_score;
-    int invisible;
-    int shield;
-} Special_Foods;
-
-typedef struct
-{
     Point point;
     Pixel_Position pixel_position;
-    Special_Foods special_foods;
     Size size;
     int current_frame;
     int current_move;
@@ -66,6 +81,7 @@ const int OFFSET = 20;
 
 int y_index = 0;
 int x_index = 0;
+
 typedef struct
 {
     int total_food;
@@ -73,22 +89,19 @@ typedef struct
     int score;
     int game_status;
 } Game;
- Pacman pacman = {
-        {1, 1},
-        {36, 35},
-        {0, 0, 0, 0, 0, 0}, 
-        {20, 20},
-        0,
-        -1,
-        {pacman_frame_0,
-         pacman_frame_1,
-         pacman_frame_2,
-         pacman_frame_3,
-         pacman_frame_4,
-         pacman_frame_5,
-         pacman_frame_6}
-    };
-
+Pacman pacman = {
+    {1, 1},
+    {36, 35},
+    {20, 20},
+    0,
+    -1,
+    {pacman_frame_0,
+     pacman_frame_1,
+     pacman_frame_2,
+     pacman_frame_3,
+     pacman_frame_4,
+     pacman_frame_5,
+     pacman_frame_6}};
 
 Ghost pinky = {
     {10, 9},
@@ -137,45 +150,31 @@ int is_all_out_of_house = 0;
 int end_game = 0;
 
 int original_map[ROWS][COLS] = {
-    { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    { 1, 4, 9, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
-    { 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1},
-    { 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1},
-    { 1, 2, 6, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
-    { 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1},
-    { 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1},
-    { 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1},
-    {-1,-1,-1,-1, 1, 2, 1, 7, 2, 3, 2, 3, 2, 2, 1, 2, 1,-1,-1,-1,-1},
-    { 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 0, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1},
-    { 5, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 5},
-    { 1, 1, 1, 1, 1, 2, 1, 2, 1, 0, 0, 0, 1, 2, 1, 2, 1, 1, 1, 1, 1},
-    {-1,-1,-1,-1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1,-1,-1,-1,-1},
-    {-1,-1,-1,-1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1,-1,-1,-1,-1},
-    { 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1},
-    { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
-    { 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1},
-    { 1, 2, 2, 2, 1, 2, 2, 2, 2, 3, 2, 3, 2, 2, 2, 2, 1, 2, 2, 2, 1},
-    { 1, 1, 2, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 2, 1, 1},
-    { 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1},
-    { 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1},
-    { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
-    { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 4, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+    {1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1},
+    {1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1},
+    {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+    {1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1},
+    {1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1},
+    {1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1},
+    {5, 5, 5, 5, 1, 2, 1, 2, 2, 6, 2, 6, 2, 2, 1, 2, 1, 5, 5, 5, 5},
+    {1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1},
+    {5, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 5},
+    {1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1},
+    {5, 5, 5, 5, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 5, 5, 5, 5},
+    {5, 5, 5, 5, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 5, 5, 5, 5},
+    {1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1},
+    {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+    {1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1},
+    {1, 2, 2, 2, 1, 2, 2, 2, 2, 6, 2, 6, 2, 2, 2, 2, 1, 2, 2, 2, 1},
+    {1, 1, 2, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 2, 1, 1},
+    {1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1},
+    {1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1},
+    {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 
 int map[ROWS][COLS];
-
-//-1: Outside the maze
-// 0: Empty road
-// 1: Wall
-// 2: Normal Food
-// 3: Special Tiles
-// 4: Pacman
-// 5: Teleport Gate
-// 6: Freeze Ghosts Food (Freeze the ghosts for 15 seconds)
-// 7: Reverse Food (Make the pacman moved in the opposite direction than the user input for 15 seconds)
-// 8: Double-Score Food (All the foods eaten will score double for 30 seconds)
-// 9: Invisible Food (The ghost can not target the pacman for 15 seconds) //ghost stage 1 only
-// 10: Shield Food (The ghost can not get close to the pacman for 30 seconds)
-// 11: Random Effect Food (Trigger a random effect of the above food)
 
 void move_image(char c, int flag);
 void draw_map();
@@ -188,8 +187,12 @@ void move_ghost_execute(Ghost *ghost);
 void move_ghost(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky);
 void intro();
 void clear();
+
+void drawVideo();
+
 void process(char *input);
-void handle_special_food(Pacman *pacman, Ghost *pinky);
+
+
 
 void main()
 {
@@ -256,13 +259,9 @@ void intro()
 
 void process(char *input)
 {
-    if (stringcompare(buffer, "exit") == 0)
-    {
-        intro();
-        restart_flag = 0;
-    }
+
     //////////////////////////////////////////////////////////////////
-    else if (stringcompare(buffer, "1") == 0)
+    if (stringcompare(buffer, "1") == 0)
     {
         uart_puts("\n");
 
@@ -299,7 +298,8 @@ void process(char *input)
                     }
                     else
                     {
-                        uart_puts("\nError: Unidentified command");
+                        uart_puts("\nError: Unidentified command\n");
+                        
                     }
                 }
                 else
@@ -315,10 +315,19 @@ void process(char *input)
             }
         }
     }
+    else if (stringcompare(buffer, "2") == 0){
+        
+        case_one = 1;
+        buffer_index = 0;
+        buffer = " "; // reset buffer
+        
+        drawVideo();
+    }
 
     ///////////////////////////////////////////////////////////////
-    else if (stringcompare(buffer, "3") == 0 || restart_flag == 1)
+    else if (stringcompare(buffer, "3") == 0 || stringcompare(buffer, "replay") == 0)
     {
+
         for (int i = 0; i < ROWS; i++)
         {
             for (int k = 0; k < COLS; k++)
@@ -338,10 +347,12 @@ void process(char *input)
         end_game = 0;
 
         game(pacman, pinky, blinky, clyde, inky);
-        restart_flag = 1;
-        uart_puts("\n Type exit to exit out of the game, any button to replay the game");
+        uart_puts("\n Type exit to exit out of the game, restart to replay the game");
     }
-
+    else if (stringcompare(buffer, "exit") == 0)
+    {
+        intro();
+    }
     else if (stringcompare(buffer, "clear") == 0)
     {
         clear();
@@ -404,29 +415,6 @@ void move_pacman(Pacman *pacman, char c)
 {
     int pacman_old_x_position = pacman->pixel_position.x;
     int pacman_old_y_position = pacman->pixel_position.y;
-
-    // Check if Pacman is reversed
-    if (pacman->special_foods.reversed)
-    {
-        // Reverse the direction based on user input index
-        if (c == 's')
-        {
-            c = 'w'; // Reverse 's' to 'w'
-        }
-        else if (c == 'w')
-        {
-            c = 's'; // Reverse 'w' to 's'
-        }
-        else if (c == 'a')
-        {
-            c = 'd'; // Reverse 'a' to 'd'
-        }
-        else if (c == 'd')
-        {
-            c = 'a'; // Reverse 'd' to 'a'
-        }
-    }
-
     if (c == 's')
     {
         // if the pacman is in the last row
@@ -534,24 +522,6 @@ void move_pacman(Pacman *pacman, char c)
         // decrease the total food
         total_food -= 1;
     }
-    // if the pacman has eaten a freeze ghosts food
-    else if (map[pacman->point.row][pacman->point.col] == 6)
-    {
-        pacman->special_foods.active++;
-        pacman->special_foods.freeze_ghosts = 1;
-    }
-    // if the pacman has eaten a reversed food
-    else if (map[pacman->point.row][pacman->point.col] == 7)
-    {
-        pacman->special_foods.active++;
-        pacman->special_foods.reversed = 1;
-    }
-    // if the pacman has eaten a invisible food
-    else if (map[pacman->point.row][pacman->point.col] == 9)
-    {
-        pacman->special_foods.active++;
-        pacman->special_foods.invisible = 1;
-    }
 
     // mark the new position of pacman on the map
     map[pacman->point.row][pacman->point.col] = 4;
@@ -565,7 +535,7 @@ void draw_food_after_ghosts_move(Ghost *ghost)
     // clearing the old ghosts in the screen
     // draw back the foods
     clearObject(ghost->pixel_position.x, ghost->pixel_position.y, ghost->size.width, ghost->size.height);
-    if (map[ghost->point.row][ghost->point.col] == 2 || map[ghost->point.row][ghost->point.col] == 3)
+    if (map[ghost->point.row][ghost->point.col] == 2 || map[ghost->point.row][ghost->point.col] == 6)
     {
         drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 24, 10 + ghost->point.row * 24 + 23, 0xFF000000, 1);
         int food_start_x = (2 * ghost->pixel_position.x + 25) / 2 - 6;
@@ -573,59 +543,6 @@ void draw_food_after_ghosts_move(Ghost *ghost)
         int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 3;
         int food_end_y = (2 * ghost->pixel_position.y + 24) / 2 + 3;
         drawRectARGB32(food_start_x, food_start_y, food_end_x, food_end_y, 0xFFFFAA88, 1);
-    }
-    else if (map[ghost->point.row][ghost->point.col] == 6)
-    { // freeze ghost
-        // draw a black rectangle
-        drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);
-        int food_start_x = (2 * ghost->pixel_position.x + 25) / 2 - 8;
-        int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 8;
-        drawObjectARGB32(food_start_x, food_start_y, 16, 16, freeze_ghosts_food);
-    }
-    else if (map[ghost->point.row][ghost->point.col] == 7)
-    { // reversed food
-        // draw a black rectangle
-        drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);
-
-        int food_start_x = (2 * ghost->pixel_position.x + 25) / 2 - 8;
-        int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 8;
-        drawObjectARGB32(food_start_x, food_start_y, 16, 16, reverse_food);
-    }
-    else if (map[ghost->point.row][ghost->point.col] == 8)
-    { // double score
-        // draw a black rectangle
-        drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);
-
-        int food_start_x = (2 * ghost->pixel_position.x + 25) / 2 - 8;
-        int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 8;
-        drawObjectARGB32(food_start_x, food_start_y, 16, 16, double_score_food);
-    }
-    else if (map[ghost->point.row][ghost->point.col] == 9)
-    { // invisible food
-        // draw a black rectangle
-        drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);
-
-        int food_start_x = (2 * ghost->pixel_position.x + 25) / 2 - 8;
-        int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 8;
-        drawObjectARGB32(food_start_x, food_start_y, 16, 16, invisible_food);
-    }
-    else if (map[ghost->point.row][ghost->point.col] == 10)
-    { // shield food
-        // draw a black rectangle
-        drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);
-
-        int food_start_x = (2 * ghost->pixel_position.x + 25) / 2 - 8;
-        int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 8;
-        drawObjectARGB32(food_start_x, food_start_y, 16, 16, shield_food);
-    }
-    else if (map[ghost->point.row][ghost->point.col] == 11)
-    { // random effect food
-        // draw a black rectangle
-        drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);
-
-        int food_start_x = (2 * ghost->pixel_position.x + 25) / 2 - 8;
-        int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 8;
-        drawObjectARGB32(food_start_x, food_start_y, 16, 16, random_effect_food);
     }
     else
     {
@@ -652,7 +569,7 @@ void draw_map()
                 // draw a bule rectangal
                 drawRectARGB32(start_x, start_y, end_x, end_y, 0x000000CC, 2);
             }
-            else if (map[i][j] == 2 || map[i][j] == 3)
+            else if (map[i][j] == 2 || map[i][j] == 6)
             { // if this is a road
                 // draw a black rectangle
                 // drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
@@ -666,69 +583,6 @@ void draw_map()
                 int food_end_y = (start_y + end_y) / 2 + 3;
                 drawRectARGB32(food_start_x, food_start_y, food_end_x, food_end_y, 0xFFFFAA88, 1);
             }
-            else if (map[i][j] == 5)
-            { // teleport gate
-                // draw a black rectangle
-                drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
-
-                int food_start_x = (start_x + end_x) / 2 - 8;
-                int food_start_y = (start_y + end_y) / 2 - 8;
-                drawObjectARGB32(food_start_x, food_start_y, 16, 16, teleport_gate);
-            }
-            else if (map[i][j] == 6)
-            { // freeze ghost
-                // draw a black rectangle
-                drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
-
-                int food_start_x = (start_x + end_x) / 2 - 8;
-                int food_start_y = (start_y + end_y) / 2 - 8;
-                drawObjectARGB32(food_start_x, food_start_y, 16, 16, freeze_ghosts_food);
-            }
-            else if (map[i][j] == 7)
-            { // reversed food
-                // draw a black rectangle
-                drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
-
-                int food_start_x = (start_x + end_x) / 2 - 8;
-                int food_start_y = (start_y + end_y) / 2 - 8;
-                drawObjectARGB32(food_start_x, food_start_y, 16, 16, reverse_food);
-            }
-            else if (map[i][j] == 8)
-            { // double score
-                // draw a black rectangle
-                drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
-
-                int food_start_x = (start_x + end_x) / 2 - 8;
-                int food_start_y = (start_y + end_y) / 2 - 8;
-                drawObjectARGB32(food_start_x, food_start_y, 16, 16, double_score_food);
-            }
-            else if (map[i][j] == 9)
-            { // invisible food
-                // draw a black rectangle
-                drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
-
-                int food_start_x = (start_x + end_x) / 2 - 8;
-                int food_start_y = (start_y + end_y) / 2 - 8;
-                drawObjectARGB32(food_start_x, food_start_y, 16, 16, invisible_food);
-            }
-            else if (map[i][j] == 10)
-            { // shield food
-                // draw a black rectangle
-                drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
-
-                int food_start_x = (start_x + end_x) / 2 - 8;
-                int food_start_y = (start_y + end_y) / 2 - 8;
-                drawObjectARGB32(food_start_x, food_start_y, 16, 16, shield_food);
-            }
-            else if (map[i][j] == 11)
-            { // random effect food
-                // draw a black rectangle
-                drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
-
-                int food_start_x = (start_x + end_x) / 2 - 8;
-                int food_start_y = (start_y + end_y) / 2 - 8;
-                drawObjectARGB32(food_start_x, food_start_y, 16, 16, random_effect_food);
-            }
             else
             { // outside maze zone
                 // drawing a black rectangle
@@ -741,9 +595,7 @@ void draw_map()
 void draw_pacman(Pacman *pacman)
 {
     // Define the duration (in milliseconds) between each frame update
-    const unsigned int frame_duration_ms = 10;
-    clearObject(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height);
-    set_wait_timer(1, frame_duration_ms);
+    const unsigned int frame_duration_ms = 2000;
 
     // Update the frame
     if (pacman->current_frame < 6)
@@ -754,6 +606,8 @@ void draw_pacman(Pacman *pacman)
     { // reset the frame
         pacman->current_frame = 0;
     }
+
+    set_wait_timer(1, frame_duration_ms);
 
     // Animate the pacman
     // Delete the old frame
@@ -772,24 +626,19 @@ void draw_ghost(Ghost *ghost)
 
 void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 {
+
     // draw the map
     draw_map();
-    draw_ghost(&pinky);
-    draw_ghost(&blinky);
-    draw_ghost(&clyde);
-    draw_ghost(&inky);
     int cnt = 0;
 
     while (1)
     {
-        handle_special_food(&pacman, &pinky);
-
         set_wait_timer(1, 10);
         // animate the pacman
         draw_pacman(&pacman);
 
         // break the loop if the game is end.
-        if (end_game)
+        if (end_game == 1)
         {
             wait_msec(1000);
             break;
@@ -797,8 +646,13 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 
         if (pinky.is_move)
         {
+            wait_msec(100000);
             move_ghost(&pacman, &pinky, &blinky, &clyde, &inky);
         }
+        draw_ghost(&pinky);
+        draw_ghost(&blinky);
+        draw_ghost(&clyde);
+        draw_ghost(&inky);
 
         if (is_caught(pacman, pinky, blinky, clyde, inky))
         {
@@ -812,10 +666,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             // get the input and execute
             char c = uart_getc();
             move_pacman(&pacman, c);
-            if (pinky.is_move == 0)
-            {
-                pinky.is_move = 1;
-            }
+            pinky.is_move = 1;
         }
 
         // if all the foods are eaten, dislay winning message and end the game.
@@ -829,27 +680,19 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         if (is_all_out_of_house)
         {
             set_wait_timer(0, 10);
-            if (pacman.special_foods.invisible)
+            cnt++;
+            // After 7s, change to chase mode
+            if (cnt % 70 == 0 && scatter_mode)
             {
+                scatter_mode = 0;
+                chase_mode = 1;
+                cnt = 0;
+            }
+            else if (cnt % 200 == 0 && chase_mode)
+            { // After 20s, back to scatter mode
                 scatter_mode = 1;
                 chase_mode = 0;
-            }
-            else
-            {
-                cnt++;
-                // After 20s, change to chase mode
-                if (cnt % 200 == 0 && scatter_mode)
-                {
-                    scatter_mode = 0;
-                    chase_mode = 1;
-                    cnt = 0;
-                }
-                else if (cnt % 70 == 0 && chase_mode)
-                { // After 7s, back to scatter mode
-                    scatter_mode = 1;
-                    chase_mode = 0;
-                    cnt = 0;
-                }
+                cnt = 0;
             }
         }
         else
@@ -869,7 +712,6 @@ int is_caught(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 
 void move_ghost(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky)
 {
-    set_wait_timer(1, 200000);
     if (scatter_mode)
     {
         if (!is_all_out_of_house)
@@ -997,13 +839,6 @@ void move_ghost(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost
         inky->target_position.col = 2 * intermidiate.col - blinky->point.col;
         move_ghost_execute(inky);
     }
-
-    draw_ghost(pinky);
-    draw_ghost(blinky);
-    draw_ghost(clyde);
-    draw_ghost(inky);
-
-    set_wait_timer(1, 200000);
 }
 
 void move_priority(Ghost *ghost, PriorityQueue (*arr)[])
@@ -1050,7 +885,7 @@ void process_next_move(Ghost *ghost, PriorityQueue dis[])
         if (dis[i].direction == 0)
         {
             if (ghost->previous_move != 2 && ghost->point.row > 1 && map[ghost->point.row - 1][ghost->point.col] != 1 &&
-                map[ghost->point.row][ghost->point.col] != 3)
+                map[ghost->point.row][ghost->point.col] != 6)
             {
                 // move to the new position
                 // increasing the row
@@ -1124,86 +959,34 @@ void move_ghost_execute(Ghost *ghost)
     process_next_move(ghost, descending_dis);
 }
 
-void handle_special_food(Pacman *pacman, Ghost *pinky)
-{
-    static int reversed_time = 15;
-    static int freeze_ghosts_time = 15;
-    static int invisible_time = 15;
+//Video Frame execution
 
-    int x_offset = 0;
+// Function to draw video
+void drawVideo() {
+    clearScreen();
+    
+    unsigned long *frames[] = {frame1, frame2, frame3, frame4, frame5, frame6, frame7, frame8, frame9, frame10, frame11, frame12, frame13, frame14, frame15
+    ,frame16,frame17,frame18,frame19,frame20,frame21,frame22,frame23,frame24,frame25,frame26,frame27,frame28,frame29,frame30,frame31,frame32
+    ,frame33,frame34,frame35,frame36,frame37,frame38,frame39,frame40,frame41,frame42,frame43,frame44,frame45,frame46,frame47,frame48,frame49,frame50
+    ,frame51,frame52,frame53,frame54,frame55,frame56,frame57,frame58,frame59,frame60,frame61,frame62,frame63,frame64
+    ,frame65,frame66,frame67,frame68,frame69,frame70,frame71,frame72,frame73,frame74,frame75,frame76,frame77,frame78,frame79,frame80,
+    frame81, frame82,frame83,frame84,frame85,frame86,frame87,frame88,frame89,frame90,frame91,frame92,frame93,frame94,frame95,frame96,frame97,frame98,
+    frame99,frame100,frame101,frame102,frame103,frame104,frame105,frame106,frame107,frame108,frame109,frame110,frame111,frame112,frame113,frame114,
+    frame115,frame116,frame117,frame118,frame119,frame120,frame121,frame122,frame123,frame124,frame125,frame126,frame127,frame128,frame129,frame130,frame131,
+    frame132,frame133,frame134,frame135,frame136,frame137,frame138,frame139,frame140,frame141,frame142,frame143,frame144,frame145,frame146};
 
-    if (!pacman->special_foods.active)
-    {
-        for (int i = 0; i < 5; i++)
-        {
-            clearObject(10 + x_offset * 40, 572, 32, 32);
-        }
-    }
+    int num_frames = sizeof(frames) / sizeof(frames[0]);
 
-    if (pacman->special_foods.freeze_ghosts)
-    {
-        if (x_offset < pacman->special_foods.active)
-        {
-            set_wait_timer(1, 10);
-            drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, freeze_ghosts_food_icon);
-            set_wait_timer(0, 10);
-            x_offset++;
-        }
+    // Draw each frame with a delay
+    for (int i = 0; i < num_frames; i++) {
+        // Call drawFrameARGB32 with the appropriate frame data and coordinates
+        drawFrameARGB32(frames[i], 0, 0); // Assuming (0, 0) as the top-left corner
 
-        if (pinky->is_move)
-        {
-            pinky->is_move = 0;
-        }
-
-        clock(&freeze_ghosts_time);
-        if (!freeze_ghosts_time)
-        {
-            clearObject(10 + x_offset * 40, 572, 32, 32);
-            pacman->special_foods.active--;
-            pacman->special_foods.freeze_ghosts = 0;
-
-            if (!pinky->is_move)
-            {
-                pinky->is_move = 1;
-            }
-        }
-    }
-
-    if (pacman->special_foods.reversed)
-    {
-        if (x_offset < pacman->special_foods.active)
-        {
-            set_wait_timer(1, 10);
-            drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, reversed_food_icon);
-            set_wait_timer(0, 10);
-            x_offset++;
-        }
-
-        clock(&reversed_time);
-        if (!reversed_time)
-        {
-            clearObject(10 + x_offset * 40, 572, 32, 32);
-            pacman->special_foods.active--;
-            pacman->special_foods.reversed = 0;
-        }
-    }
-
-    if (pacman->special_foods.invisible)
-    {
-        if (x_offset < pacman->special_foods.active)
-        {
-            set_wait_timer(1, 10);
-            drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, invisible_food_icon);
-            set_wait_timer(0, 10);
-            x_offset++;
-        }
-
-        clock(&invisible_time);
-        if (!invisible_time)
-        {
-            clearObject(10 + x_offset * 40, 572, 32, 32);
-            pacman->special_foods.active--;
-            pacman->special_foods.invisible = 0;
-        }
+        // Delay to control the frame rate (assuming 3 frames per second)
+        wait_msec(100000/3);
     }
 }
+
+
+
+
