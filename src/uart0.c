@@ -186,7 +186,7 @@ unsigned char getUart()
     return ch;
 }
 
-void wait_msec(unsigned int n)
+void wait_msec(unsigned int msVal)
 {
     register unsigned long f, t, r, expiredTime;
     // Get the current counter frequency (Hz)
@@ -194,7 +194,7 @@ void wait_msec(unsigned int n)
     // Read the current counter value
     asm volatile("mrs %0, cntpct_el0" : "=r"(t));
     // Calculate expire value for counter
-    expiredTime = t + ((f / 1000) * n) / 1000;
+    expiredTime = t + f * (msVal/1000.0f);
     do
     {
         asm volatile("mrs %0, cntpct_el0" : "=r"(r));
@@ -212,7 +212,7 @@ void set_wait_timer(int set, unsigned int msVal)
         // Read the current counter
         asm volatile("mrs %0, cntpct_el0" : "=r"(t));
         // Calculate expired time:
-        expiredTime = t + ((f / 1000) * msVal) / 1000;
+        expiredTime = t + f * (msVal/1000.0f);
     }
     else
     { /* WAIT FOR TIMER TO EXPIRE */

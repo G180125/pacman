@@ -140,14 +140,13 @@ int frighten_mode = 0;
 int total_food = 220;
 int is_all_out_of_house = 0;
 int end_game = 0;
-int cnt = 0;
 Point gate = {9, 10};
 
 int original_map[ROWS][COLS] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 4, 9, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
     {1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1},
-    {1, 12, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 12, 1},
+    {1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 12, 1},
     {1, 2, 6, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
     {1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1},
     {1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1},
@@ -779,9 +778,9 @@ void draw_map()
 void draw_pacman(Pacman *pacman)
 {
     // Define the duration (in milliseconds) between each frame update
-    const unsigned int frame_duration_ms = 10;
+    // const unsigned int frame_duration_ms = 10;
     clearObject(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height);
-    set_wait_timer(1, frame_duration_ms);
+    // set_wait_timer(1, frame_duration_ms);
 
     // Update the frame
     if (pacman->current_frame < 6)
@@ -799,7 +798,7 @@ void draw_pacman(Pacman *pacman)
     clearObject(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height);
     drawObjectARGB32(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height, pacman->frames[pacman->current_frame]);
 
-    set_wait_timer(0, frame_duration_ms);
+    // set_wait_timer(0, frame_duration_ms);
 }
 
 void draw_ghost(Ghost *ghost)
@@ -830,25 +829,16 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
     draw_ghost(&blinky);
     draw_ghost(&clyde);
     draw_ghost(&inky);
+    int cnt = 0;
 
     while (1)
     {
-        handle_special_food(&pacman, &pinky, &blinky, &clyde, &inky);
-
-        set_wait_timer(1, 10);
-        // animate the pacman
-        draw_pacman(&pacman);
-
+        set_wait_timer(1, 20);
         // break the loop if the game is end.
         if (end_game)
         {
-            wait_msec(1000);
+            // wait_msec(1000);
             break;
-        }
-
-        if (pinky.is_move)
-        {
-            move_ghost(&pacman, &pinky, &blinky, &clyde, &inky);
         }
 
         if (is_caught(pacman, pinky, blinky, clyde, inky))
@@ -862,6 +852,11 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         is_eaten(pacman, &blinky);
         is_eaten(pacman, &clyde);
         is_eaten(pacman, &inky);
+
+        handle_special_food(&pacman, &pinky, &blinky, &clyde, &inky);
+
+        // animate the pacman
+        draw_pacman(&pacman);
 
         // if there is an input key
         if (uart_isReadByteReady() == 0)
@@ -875,16 +870,18 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             }
         }
 
-        if (is_caught(pacman, pinky, blinky, clyde, inky))
+        if (pinky.is_move && cnt % 15 == 0)
         {
-            uart_puts("\nGame Over");
-            end_game = 1;
-            continue;
+            uart_dec(cnt);
+            uart_puts("\n");
+            // set_wait_timer(1, 10);
+            move_ghost(&pacman, &pinky, &blinky, &clyde, &inky);
+            draw_ghost(&pinky);
+            draw_ghost(&blinky);
+            draw_ghost(&clyde);
+            draw_ghost(&inky);
+            // set_wait_timer(0, 10);
         }
-        is_eaten(pacman, &pinky);
-        is_eaten(pacman, &blinky);
-        is_eaten(pacman, &clyde);
-        is_eaten(pacman, &inky);
 
         // if all the foods are eaten, dislay winning message and end the game.
         if (total_food == 0)
@@ -893,10 +890,9 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             end_game = 1;
         }
 
-        // Stop counting time and polling to switch state if all the ghost leaves the house
+        //Stop counting time and polling to switch state if all the ghost leaves the house
         if (is_all_out_of_house)
         {
-            set_wait_timer(0, 10);
             if (pacman.special_foods.power_up && !frighten_mode)
             {
                 enable_frighten_mode(&pinky, &blinky, &clyde, &inky);
@@ -908,25 +904,25 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             }
             else
             {
-                cnt++;
                 // After 20s, change to chase mode
-                if (cnt % 100 == 0 && scatter_mode)
+                if (((cnt-1000) % 1500 == 0 && scatter_mode == 1) || cnt == 1000)
                 {
+                    uart_puts("chase\n");
                     scatter_mode = 0;
                     chase_mode = 1;
-                    cnt = 0;
                 }
-                else if (cnt % 100 == 0 && chase_mode)
-                { // After 7s, back to scatter mode
+                else if (cnt % 1500 == 0 && chase_mode == 1)
+                { // After 10s, back to scatter mode
+                uart_puts("scatter\n");
                     scatter_mode = 1;
                     chase_mode = 0;
-                    cnt = 0;
                 }
             }
         }
-        else
-        { // The player not start the game or all the ghosts not leave the house yet
-            set_wait_timer(0, 10);
+        set_wait_timer(0, 20);
+        if (pinky.is_move)
+        {
+            cnt++;
         }
     }
 }
@@ -956,7 +952,7 @@ int is_eaten(Pacman pacman, Ghost *ghost)
 
 void move_ghost(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky)
 {
-    set_wait_timer(1, 200000);
+    // set_wait_timer(1, 200000);
 
     if (scatter_mode)
     {
@@ -971,12 +967,7 @@ void move_ghost(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost
         move_ghost_frighten(pacman, pinky, blinky, clyde, inky);
     }
 
-    draw_ghost(pinky);
-    draw_ghost(blinky);
-    draw_ghost(clyde);
-    draw_ghost(inky);
-
-    set_wait_timer(1, 200000);
+    // set_wait_timer(1, 200000);
 }
 
 void move_ghost_scatter(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky)
@@ -1384,7 +1375,7 @@ void move_ghost_execute(Pacman *pacman, Ghost *ghost)
                 // ghost->target_position.row = gate.row;
                 // ghost->target_position.col = gate.col;
                 ghost->status = 0;
-            }             
+            }
         }
         PriorityQueue descending_dis[4];
 
@@ -1416,9 +1407,9 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
     {
         if (x_offset < pacman->special_foods.active)
         {
-            set_wait_timer(1, 10);
+            //set_wait_timer(1, 10);
             drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, freeze_ghosts_food_icon);
-            set_wait_timer(0, 10);
+            //set_wait_timer(0, 10);
             x_offset++;
         }
 
@@ -1446,9 +1437,9 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
     {
         if (x_offset < pacman->special_foods.active)
         {
-            set_wait_timer(1, 10);
+            //set_wait_timer(1, 10);
             drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, reversed_food_icon);
-            set_wait_timer(0, 10);
+            //set_wait_timer(0, 10);
             x_offset++;
         }
 
@@ -1466,16 +1457,16 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
     {
         if (x_offset < pacman->special_foods.active)
         {
-            set_wait_timer(1, 10);
+            //set_wait_timer(1, 10);
             drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, invisible_food_icon);
-            set_wait_timer(0, 10);
+            //set_wait_timer(0, 10);
             x_offset++;
         }
 
         clock(&invisible_time);
         if (!invisible_time)
         {
-            invisible_time = 15; // Reset time for next time pacman eat that item
+            //invisible_time = 15; // Reset time for next time pacman eat that item
             clearObject(10 + x_offset * 40, 572, 32, 32);
             pacman->special_foods.active--;
             pacman->special_foods.invisible = 0;
@@ -1486,9 +1477,9 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
     {
         if (x_offset < pacman->special_foods.active)
         {
-            set_wait_timer(1, 10);
+            //set_wait_timer(1, 10);
             drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, power_food_icon);
-            set_wait_timer(0, 10);
+            //set_wait_timer(0, 10);
             x_offset++;
         }
 
