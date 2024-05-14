@@ -24,4 +24,5 @@ int distance_square(int x0, int y0, int x1, int y1);
 void bubbleSort(PriorityQueue arr[], int n);
 int stringcompare(char *a, char *b);
 void *memcpy(void *restrict dest, const void *restrict src, size_t len);
-
+char *numDisplay(int input);
+void copyString(char *t, char *s);

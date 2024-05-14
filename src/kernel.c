@@ -14,7 +14,7 @@ char *buffer = "";    // buffer string for input
 int buffer_index = 0; // index for buffer string
 int case_one = 0;     // flag for case 1 (image viewer)
 int restart_flag = 0; // restart flag for game
-
+int threshold = 0;    // goal to win the game
 typedef struct
 {
     int x;
@@ -137,7 +137,7 @@ Ghost inky = {
 int scatter_mode = 1;
 int chase_mode = 0;
 int frighten_mode = 0;
-int total_food = 220;
+int total_food = 0;
 int is_all_out_of_house = 0;
 int end_game = 0;
 Point gate = {9, 10};
@@ -253,6 +253,17 @@ void main()
         }
     }
 }
+void displayNumber(int x, int y, int offset, char *input, unsigned int attr)
+{
+    // uart_puts("Input in display number: ");
+    int offset_temp = offset;
+    int count = 1;
+    for (int i = string_length(input) - 1; i >= 0; i--)
+    {
+        drawCharARGB32(x + offset_temp * count, y, input[i], attr);
+        count++;
+    }
+}
 
 void intro()
 {
@@ -346,7 +357,7 @@ void process(char *input)
         scatter_mode = 1;
         chase_mode = 0;
         frighten_mode = 0;
-        total_food = 220;
+        total_food = 0;
         is_all_out_of_house = 0;
         end_game = 0;
 
@@ -415,6 +426,7 @@ void move_image(char c, int flag)
 
 void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky, char c)
 {
+
     int pacman_old_x_position = pacman->pixel_position.x;
     int pacman_old_y_position = pacman->pixel_position.y;
 
@@ -544,8 +556,17 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
     // if the new position has a food
     if (map[pacman->point.row][pacman->point.col] == 2)
     {
+        uart_puts("Points remaining: ");
+        uart_dec(total_food);
+        uart_puts("\n");
+        char *str_total_food = "";
+        displayNumber(850, 600, 10, str_total_food, 0x000000);
         // decrease the total food
         total_food -= 1;
+
+        copyString(str_total_food, numDisplay(total_food));
+
+        displayNumber(850, 600, 10, str_total_food, 0xFFFFFF);
     }
     // if the pacman has eaten a freeze ghosts food
     else if (map[pacman->point.row][pacman->point.col] == 6)
@@ -693,6 +714,7 @@ void draw_map()
                 int food_start_y = (start_y + end_y) / 2 - 3;
                 int food_end_y = (start_y + end_y) / 2 + 3;
                 drawRectARGB32(food_start_x, food_start_y, food_end_x, food_end_y, 0xFFFFAA88, 1);
+                total_food++;
             }
             else if (map[i][j] == 5)
             { // teleport gate
@@ -773,6 +795,7 @@ void draw_map()
             }
         }
     }
+    threshold = total_food;
 }
 
 void draw_pacman(Pacman *pacman)
@@ -823,6 +846,7 @@ void draw_ghost(Ghost *ghost)
 
 void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 {
+    // clearScreen();
     // draw the map
     draw_map();
     draw_ghost(&pinky);
@@ -830,6 +854,19 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
     draw_ghost(&clyde);
     draw_ghost(&inky);
     int cnt = 0;
+    // uart_sendc(total_food); total_food is correct
+    char *str_total_food = "";
+    char *str_threshold = "";
+    copyString(str_total_food, numDisplay(total_food));
+    copyString(str_threshold, numDisplay(threshold));
+    drawStringARGB32(750, 600, "Scoreboard: ", 0xFFFFFF);
+    displayNumber(850, 600, 10, str_total_food, 0xFFFFFF);
+    // uart_puts("Total Food with str_total_food: ");
+    // uart_puts(str_total_food);
+    drawCharARGB32(900, 600, '/', 0xFFFFFF);
+    displayNumber(910, 600, 10, str_threshold, 0xFFFFFF);
+    // uart_puts("\nThreshold: ");
+    //  uart_puts(numDisplay(threshold));
 
     while (1)
     {
