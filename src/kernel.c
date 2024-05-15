@@ -211,6 +211,7 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
 void display_ending_screen();
 void display_ending_result(int col, int row);
 void display_statistic(int statistic, int time);
+void display_rating(int value);
 void main()
 {
     // set up serial console
@@ -850,7 +851,7 @@ void draw_pacman(Pacman *pacman)
 
 void draw_ghost(Ghost *ghost)
 {
-    if (ghost->status != 0)
+    if (ghost->status != 0 && ghost->status != 5)
     {
         if (ghost->status == 1)
         {
@@ -880,7 +881,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
     int cnt = 0;
     // uart_sendc(total_food); total_food is correct
     char *str_total_points = "";
-    char *str_threshold = "";
+    // char *str_threshold = "";
     copyString(str_total_points, numDisplay(total_points));
     // copyString(str_threshold, numDisplay(threshold));
     // uart_puts(str_total_points);
@@ -1099,75 +1100,87 @@ void move_ghost_scatter(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyd
 void move_ghost_chase(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky)
 {
     // Pinky -> 4 tiles a head pacman
-    switch (pacman->current_move)
+    if (pinky->status == 0)
     {
-    case 0:
-        pinky->target_position.row = pacman->point.row - 4;
-        pinky->target_position.col = pacman->point.col - 4;
-        break;
+        switch (pacman->current_move)
+        {
+        case 0:
+            pinky->target_position.row = pacman->point.row - 4;
+            pinky->target_position.col = pacman->point.col - 4;
+            break;
 
-    case 1:
-        pinky->target_position.row = pacman->point.row;
-        pinky->target_position.col = pacman->point.col - 4;
-        break;
+        case 1:
+            pinky->target_position.row = pacman->point.row;
+            pinky->target_position.col = pacman->point.col - 4;
+            break;
 
-    case 2:
-        pinky->target_position.row = pacman->point.row + 4;
-        pinky->target_position.col = pacman->point.col;
-        break;
+        case 2:
+            pinky->target_position.row = pacman->point.row + 4;
+            pinky->target_position.col = pacman->point.col;
+            break;
 
-    default:
-        pinky->target_position.row = pacman->point.row;
-        pinky->target_position.col = pacman->point.col + 4;
-        break;
+        default:
+            pinky->target_position.row = pacman->point.row;
+            pinky->target_position.col = pacman->point.col + 4;
+            break;
+        }
     }
     move_ghost_execute(pacman, pinky);
 
     // Blinky -> Follow pacman
-    blinky->target_position.row = pacman->point.row;
-    blinky->target_position.col = pacman->point.col;
+    if (blinky->status == 0)
+    {
+        blinky->target_position.row = pacman->point.row;
+        blinky->target_position.col = pacman->point.col;
+    }
     move_ghost_execute(pacman, blinky);
 
     // Clyde -> outside 8 tiles around pacman -> chase like blinky; otherwise, scatter
-    int distance_to_pacman = distance_square(clyde->point.row, clyde->point.col, pacman->point.row, pacman->point.col);
-    if (distance_to_pacman > 64)
+    if (clyde->status == 0)
     {
-        clyde->target_position.row = pacman->point.row;
-        clyde->target_position.col = pacman->point.col;
-    }
-    else
-    {
-        clyde->target_position.row = clyde->scatter_position.row;
-        clyde->target_position.col = clyde->scatter_position.col;
+        int distance_to_pacman = distance_square(clyde->point.row, clyde->point.col, pacman->point.row, pacman->point.col);
+        if (distance_to_pacman > 64)
+        {
+            clyde->target_position.row = pacman->point.row;
+            clyde->target_position.col = pacman->point.col;
+        }
+        else
+        {
+            clyde->target_position.row = clyde->scatter_position.row;
+            clyde->target_position.col = clyde->scatter_position.col;
+        }
     }
     move_ghost_execute(pacman, clyde);
 
     // Inky
-    Point intermidiate;
-    switch (pacman->current_move)
+    if (inky->status == 0)
     {
-    case 0:
-        intermidiate.row = pacman->point.row - 2;
-        intermidiate.col = pacman->point.col - 2;
-        break;
+        Point intermidiate;
+        switch (pacman->current_move)
+        {
+        case 0:
+            intermidiate.row = pacman->point.row - 2;
+            intermidiate.col = pacman->point.col - 2;
+            break;
 
-    case 1:
-        intermidiate.row = pacman->point.row;
-        intermidiate.col = pacman->point.col - 2;
-        break;
+        case 1:
+            intermidiate.row = pacman->point.row;
+            intermidiate.col = pacman->point.col - 2;
+            break;
 
-    case 2:
-        intermidiate.row = pacman->point.row + 2;
-        intermidiate.col = pacman->point.col;
-        break;
+        case 2:
+            intermidiate.row = pacman->point.row + 2;
+            intermidiate.col = pacman->point.col;
+            break;
 
-    default:
-        intermidiate.row = pacman->point.row;
-        intermidiate.col = pacman->point.col + 2;
-        break;
+        default:
+            intermidiate.row = pacman->point.row;
+            intermidiate.col = pacman->point.col + 2;
+            break;
+        }
+        inky->target_position.row = 2 * intermidiate.row - blinky->point.row;
+        inky->target_position.col = 2 * intermidiate.col - blinky->point.col;
     }
-    inky->target_position.row = 2 * intermidiate.row - blinky->point.row;
-    inky->target_position.col = 2 * intermidiate.col - blinky->point.col;
     move_ghost_execute(pacman, inky);
 }
 
@@ -1352,7 +1365,8 @@ int random_move(Ghost *ghost, int direction)
 
     if (direction == 1)
     {
-        if (ghost->previous_move != 3 && ghost->point.col > 0 && map[ghost->point.row][ghost->point.col - 1] != 1)
+        if (ghost->previous_move != 3 && ghost->point.col > 0 && map[ghost->point.row][ghost->point.col - 1] != 1 &&
+            map[ghost->point.row][ghost->point.col - 1] != 5)
         {
             // move to the new position
             // decreasing the collumn
@@ -1382,7 +1396,8 @@ int random_move(Ghost *ghost, int direction)
     }
     if (direction == 3)
     {
-        if (ghost->previous_move != 1 && ghost->point.col < 22 && map[ghost->point.row][ghost->point.col + 1] != 1)
+        if (ghost->previous_move != 1 && ghost->point.col < 22 && map[ghost->point.row][ghost->point.col + 1] != 1 && 
+            map[ghost->point.row][ghost->point.col + 1] != 5)
         {
             // move to the new position
             // increasing the collumn
@@ -1428,25 +1443,27 @@ void move_ghost_execute(Pacman *pacman, Ghost *ghost)
         {
             if (ghost->status == 2)
             {
-                // uart_puts("To gate\n");
+                uart_puts("To gate\n");
                 ghost->target_position.row = gate.row;
                 ghost->target_position.col = gate.col;
                 ghost->status = 3;
             }
-            else if (ghost->point.row == gate.row && ghost->point.col == gate.col)
+            else if (ghost->point.row == gate.row && ghost->point.col == gate.col && ghost->status == 3)
             {
-                // uart_puts("To house\n");
+                uart_puts("To house\n");
                 ghost->target_position.row = gate.row + 2;
                 ghost->target_position.col = gate.col;
                 ghost->status = 4;
             }
             else if (ghost->point.row == gate.row + 2 && ghost->point.col != gate.col && ghost->status == 4)
             {
-                // uart_puts("Alive\n");
+                uart_puts("Alive\n");
+                ghost->target_position.row = gate.row;
+                ghost->target_position.col = gate.col;
+                ghost->status = 5;
+            } else if (ghost->point.row == gate.row && ghost->point.col != gate.col && ghost->status == 5) {
                 ghost->target_position.row = pacman->point.row;
                 ghost->target_position.col = pacman->point.col;
-                // ghost->target_position.row = gate.row;
-                // ghost->target_position.col = gate.col;
                 ghost->status = 0;
             }
         }
@@ -1630,20 +1647,23 @@ void display_ending_screen()
                 stage++;
             }
         }
-        if (wait == 0 && stage == 3 && time <= total_points) 
+        if (wait == 0 && stage == 3 && time <= total_points)
         {
             display_statistic(statistic, time);
             time++;
-            if (time > total_points) {
+            if (time > total_points)
+            {
                 stage++;
                 time = 0;
                 wait = 200;
             }
         }
-        if (wait == 0 && stage == 4 && cnt % 200 == 0) {
+        if (wait == 0 && stage == 4 && cnt % 200 == 0)
+        {
             display_rating(time);
             time++;
-            if (time > 5) {
+            if (time > 5)
+            {
                 break;
             }
         }
@@ -1721,7 +1741,8 @@ void display_statistic(int value, int time)
     default: // Total score
         if (time == 0)
         {
-            for (int i = 3; i < 18; i++) {
+            for (int i = 3; i < 18; i++)
+            {
                 drawRectARGB32(10 + i * 25, 10 + 10 * 24, 10 + i * 25 + 24, 10 + 10 * 24 + 5, 0x00FFFF00, 1);
             }
             drawStringARGB32(120, 295, "Total score", 0x00FFFF00);
@@ -1734,7 +1755,8 @@ void display_statistic(int value, int time)
     }
 }
 
-void display_rating(int value) {
+void display_rating(int value)
+{
     switch (value)
     {
     case 0:
@@ -1742,30 +1764,33 @@ void display_rating(int value) {
         drawStringARGB32(200, 366, "Eat all the foods", 0x00FFFF00);
         break;
 
-    case 1: 
+    case 1:
         drawObjectARGB32(120, 400, 32, 32, star_icon);
         drawStringARGB32(200, 416, "Score at least 1100 pts", 0x00FFFF00);
         break;
-    
+
     case 2:
         drawObjectARGB32(120, 450, 32, 32, star_icon);
         drawStringARGB32(200, 466, "Caught at least 4 ghosts", 0x00FFFF00);
         break;
 
     case 3:
-        if (end_game == 1) { 
+        if (threshold - total_food == 0)
+        {
             drawObjectARGB32(120, 350, 32, 32, star_fill_icon);
         }
         break;
-    
+
     case 4:
-        if (total_points >= 1100) {
+        if (total_points >= 1100)
+        {
             drawObjectARGB32(120, 400, 32, 32, star_fill_icon);
         }
         break;
 
     default:
-        if (total_ghosts_eaten >= 4) {
+        if (total_ghosts_eaten >= 4)
+        {
             drawObjectARGB32(120, 450, 32, 32, star_fill_icon);
         }
         break;
