@@ -171,6 +171,7 @@ void drawStringARGB32(int x, int y, char *str, unsigned int attr) {
         offset += FONT_WIDTH; 
     }
 }
+
 void drawImageARGB32(int x, int y, int starting_x_index, int starting_y_index,unsigned long image[]){
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {

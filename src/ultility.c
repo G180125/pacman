@@ -93,13 +93,13 @@ unsigned int random_number()
 }
 
 unsigned short lfsr = 0xACE1u;
-  unsigned bit;
+unsigned bit;
 
-  unsigned random_small_number()
-  {
-    bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
-    return lfsr =  (lfsr >> 1) | (bit << 15);
-  }
+unsigned random_small_number()
+{
+    bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1;
+    return lfsr = (lfsr >> 1) | (bit << 15);
+}
 
 int distance_square(int x0, int y0, int x1, int y1)
 {
@@ -140,31 +140,47 @@ void *memcpy(void *restrict dest, const void *restrict src, size_t len)
     char *dp = (char *restrict)dest;
     const char *sp = (const char *restrict)src;
 
-    while( len-- )
+    while (len--)
     {
         *dp++ = *sp++;
     }
 
     return dest;
+}
 
-char *numDisplay(int input)
+char* numDisplay(int input)
 {
-
     int temp = input;
     int i = 0;
-    char *str = "";
-    while (temp != 0)
+    static char str[12];
+    // Clear the buffer before using it
+    clearString(str, sizeof(str));
+    i=0;
+    if (temp == 0)
     {
-        str[i] = (temp % 10) + '0';
-        temp /= 10;
-         i++;
+        str[0] = '0';
+        str[1] = '\0';
     }
-    str[i + 1] = '\0';
- //uart_puts("Return String: ");// return string works
-    uart_puts("                         ");//
-
+    else
+    {
+        while (temp != 0)
+        {
+            str[i] = (temp % 10) + '0';
+            temp /= 10;
+            i++;
+        }
+        str[i] = '\0';
+        // uart_puts("Return String: ");// return string works
+        //uart_puts("                         "); //
+    }
     return str;
-   
+}
+
+// Function to clear a string in a buffer
+void clearString(char* str, int bufferSize) {
+    for (int i = 0; i < bufferSize; i++) {
+        str[i] = '\0';
+    }
 }
 
 void copyString(char *t, char *s)

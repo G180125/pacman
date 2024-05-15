@@ -26,3 +26,4 @@ int stringcompare(char *a, char *b);
 void *memcpy(void *restrict dest, const void *restrict src, size_t len);
 char *numDisplay(int input);
 void copyString(char *t, char *s);
+void clearString(char* str, int bufferSize);

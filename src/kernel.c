@@ -8,6 +8,7 @@
 
 #define ROWS 23
 #define COLS 22
+#define FOOD_POINTS 5
 #define MAX_SIZE 500
 #define preText "Group7> "
 char *buffer = "";    // buffer string for input
@@ -138,6 +139,9 @@ int scatter_mode = 1;
 int chase_mode = 0;
 int frighten_mode = 0;
 int total_food = 0;
+int total_points = 0;
+int total_special_foods_eaten = 0;
+int total_ghosts_eaten = 0;
 int is_all_out_of_house = 0;
 int end_game = 0;
 Point gate = {9, 10};
@@ -204,6 +208,9 @@ void intro();
 void clear();
 void process(char *input);
 void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky);
+void display_ending_screen();
+void display_ending_result(int col, int row);
+void display_statistic(int statistic, int time);
 void main()
 {
     // set up serial console
@@ -253,6 +260,7 @@ void main()
         }
     }
 }
+
 void displayNumber(int x, int y, int offset, char *input, unsigned int attr)
 {
     // uart_puts("Input in display number: ");
@@ -268,6 +276,7 @@ void displayNumber(int x, int y, int offset, char *input, unsigned int attr)
 void intro()
 {
     clearScreen();
+
     // Draw something on the screen
     drawStringARGB32(0, 50, "Nguyen Vi Phi Long - s3904632", 0x0000BB00);
     drawStringARGB32(0, 100, "Nguyen Minh Hung - s3924473", 0x00AA0000);
@@ -358,6 +367,9 @@ void process(char *input)
         chase_mode = 0;
         frighten_mode = 0;
         total_food = 0;
+        total_points = 0;
+        total_ghosts_eaten = 0;
+        total_special_foods_eaten = 0;
         is_all_out_of_house = 0;
         end_game = 0;
 
@@ -556,41 +568,53 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
     // if the new position has a food
     if (map[pacman->point.row][pacman->point.col] == 2)
     {
-        uart_puts("Points remaining: ");
-        uart_dec(total_food);
-        uart_puts("\n");
-        char *str_total_food = "";
-        displayNumber(850, 600, 10, str_total_food, 0x000000);
+        // uart_puts("Points remaining: ");
+        // uart_dec(total_food);
+        // uart_puts("\n");
+        char *str_total_points = "";
+        displayNumber(850, 600, 10, str_total_points, 0x000000);
         // decrease the total food
         total_food -= 1;
+        if (pacman->special_foods.active && pacman->special_foods.double_score)
+        {
+            total_points += FOOD_POINTS * 2;
+        }
+        else
+        {
+            total_points += FOOD_POINTS;
+        }
 
-        copyString(str_total_food, numDisplay(total_food));
+        copyString(str_total_points, numDisplay(total_points));
 
-        displayNumber(850, 600, 10, str_total_food, 0xFFFFFF);
+        displayNumber(850, 600, 10, str_total_points, 0xFFFFFF);
     }
     // if the pacman has eaten a freeze ghosts food
     else if (map[pacman->point.row][pacman->point.col] == 6)
     {
         pacman->special_foods.active++;
         pacman->special_foods.freeze_ghosts = 1;
+        total_special_foods_eaten++;
     }
     // if the pacman has eaten a reversed food
     else if (map[pacman->point.row][pacman->point.col] == 7)
     {
         pacman->special_foods.active++;
         pacman->special_foods.reversed = 1;
+        total_special_foods_eaten++;
     }
     // if the pacman has eaten a invisible food
     else if (map[pacman->point.row][pacman->point.col] == 9)
     {
         pacman->special_foods.active++;
         pacman->special_foods.invisible = 1;
+        total_special_foods_eaten++;
     }
     // if the pacman has eaten a power_up food
     else if (map[pacman->point.row][pacman->point.col] == 12)
     {
         pacman->special_foods.active++;
         pacman->special_foods.power_up = 1;
+        total_special_foods_eaten++;
     }
 
     // mark the new position of pacman on the map
@@ -855,16 +879,17 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
     draw_ghost(&inky);
     int cnt = 0;
     // uart_sendc(total_food); total_food is correct
-    char *str_total_food = "";
+    char *str_total_points = "";
     char *str_threshold = "";
-    copyString(str_total_food, numDisplay(total_food));
-    copyString(str_threshold, numDisplay(threshold));
+    copyString(str_total_points, numDisplay(total_points));
+    // copyString(str_threshold, numDisplay(threshold));
+    // uart_puts(str_total_points);
     drawStringARGB32(750, 600, "Scoreboard: ", 0xFFFFFF);
-    displayNumber(850, 600, 10, str_total_food, 0xFFFFFF);
+    displayNumber(850, 600, 10, str_total_points, 0xFFFFFF);
     // uart_puts("Total Food with str_total_food: ");
     // uart_puts(str_total_food);
-    drawCharARGB32(900, 600, '/', 0xFFFFFF);
-    displayNumber(910, 600, 10, str_threshold, 0xFFFFFF);
+    // drawCharARGB32(900, 600, '/', 0xFFFFFF);
+    // displayNumber(910, 600, 10, str_threshold, 0xFFFFFF);
     // uart_puts("\nThreshold: ");
     //  uart_puts(numDisplay(threshold));
 
@@ -874,13 +899,13 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         // break the loop if the game is end.
         if (end_game)
         {
-            // wait_msec(1000);
+            display_ending_screen();
             break;
         }
 
         if (is_caught(pacman, pinky, blinky, clyde, inky))
         {
-            uart_puts("\nGame Over");
+            uart_puts("\nGame Over\n");
             end_game = 1;
             continue;
         }
@@ -909,8 +934,8 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 
         if (pinky.is_move && cnt % 15 == 0)
         {
-            uart_dec(cnt);
-            uart_puts("\n");
+            // uart_dec(cnt);
+            // uart_puts("\n");
             // set_wait_timer(1, 10);
             move_ghost(&pacman, &pinky, &blinky, &clyde, &inky);
             draw_ghost(&pinky);
@@ -924,10 +949,10 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         if (total_food == 0)
         {
             uart_puts("\nWINNER! WINNER! CHICKEN! DINNER!");
-            end_game = 1;
+            end_game = 2;
         }
 
-        //Stop counting time and polling to switch state if all the ghost leaves the house
+        // Stop counting time and polling to switch state if all the ghost leaves the house
         if (is_all_out_of_house)
         {
             if (pacman.special_foods.power_up && !frighten_mode)
@@ -942,7 +967,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             else
             {
                 // After 20s, change to chase mode
-                if (((cnt-1000) % 1500 == 0 && scatter_mode == 1) || cnt == 1000)
+                if (((cnt - 1000) % 1500 == 0 && scatter_mode == 1) || cnt == 1000)
                 {
                     uart_puts("chase\n");
                     scatter_mode = 0;
@@ -950,7 +975,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
                 }
                 else if (cnt % 1500 == 0 && chase_mode == 1)
                 { // After 10s, back to scatter mode
-                uart_puts("scatter\n");
+                    uart_puts("scatter\n");
                     scatter_mode = 1;
                     chase_mode = 0;
                 }
@@ -979,7 +1004,17 @@ int is_eaten(Pacman pacman, Ghost *ghost)
         if (pacman.point.row == ghost->point.row && pacman.point.col == ghost->point.col)
         {
             ghost->status = 2;
+            total_ghosts_eaten++;
+
             // Increase score
+            char *str_total_points = "";
+            displayNumber(850, 600, 10, str_total_points, 0x000000);
+            // decrease the total food
+            total_points += FOOD_POINTS * 4;
+
+            copyString(str_total_points, numDisplay(total_points));
+
+            displayNumber(850, 600, 10, str_total_points, 0xFFFFFF);
 
             return 1;
         }
@@ -1403,8 +1438,9 @@ void move_ghost_execute(Pacman *pacman, Ghost *ghost)
                 // uart_puts("To house\n");
                 ghost->target_position.row = gate.row + 2;
                 ghost->target_position.col = gate.col;
+                ghost->status = 4;
             }
-            else if (ghost->point.row == gate.row + 2 && ghost->point.col != gate.col)
+            else if (ghost->point.row == gate.row + 2 && ghost->point.col != gate.col && ghost->status == 4)
             {
                 // uart_puts("Alive\n");
                 ghost->target_position.row = pacman->point.row;
@@ -1444,9 +1480,9 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
     {
         if (x_offset < pacman->special_foods.active)
         {
-            //set_wait_timer(1, 10);
+            // set_wait_timer(1, 10);
             drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, freeze_ghosts_food_icon);
-            //set_wait_timer(0, 10);
+            // set_wait_timer(0, 10);
             x_offset++;
         }
 
@@ -1474,9 +1510,9 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
     {
         if (x_offset < pacman->special_foods.active)
         {
-            //set_wait_timer(1, 10);
+            // set_wait_timer(1, 10);
             drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, reversed_food_icon);
-            //set_wait_timer(0, 10);
+            // set_wait_timer(0, 10);
             x_offset++;
         }
 
@@ -1494,16 +1530,16 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
     {
         if (x_offset < pacman->special_foods.active)
         {
-            //set_wait_timer(1, 10);
+            // set_wait_timer(1, 10);
             drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, invisible_food_icon);
-            //set_wait_timer(0, 10);
+            // set_wait_timer(0, 10);
             x_offset++;
         }
 
         clock(&invisible_time);
         if (!invisible_time)
         {
-            //invisible_time = 15; // Reset time for next time pacman eat that item
+            // invisible_time = 15; // Reset time for next time pacman eat that item
             clearObject(10 + x_offset * 40, 572, 32, 32);
             pacman->special_foods.active--;
             pacman->special_foods.invisible = 0;
@@ -1514,9 +1550,9 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
     {
         if (x_offset < pacman->special_foods.active)
         {
-            //set_wait_timer(1, 10);
+            // set_wait_timer(1, 10);
             drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, power_food_icon);
-            //set_wait_timer(0, 10);
+            // set_wait_timer(0, 10);
             x_offset++;
         }
 
@@ -1529,5 +1565,209 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
             pacman->special_foods.active--;
             pacman->special_foods.power_up = 0;
         }
+    }
+}
+
+void display_ending_screen()
+{
+    int cnt = 0;
+    int result_col = 9;
+    int result_row = 13;
+    int statistic = 0;
+    int time = 0;
+    int stage = 0;
+    int wait = 0;
+    display_ending_result(result_col, result_row);
+    while (1)
+    {
+        set_wait_timer(1, 5);
+        if (cnt == 600)
+        {
+            clearScreen();
+            display_ending_result(result_col, result_row);
+            stage++;
+        }
+        if (stage == 1 && cnt % 10 == 0 && result_row > 2)
+        {
+            result_row -= 1;
+            display_ending_result(result_col, result_row);
+            if (result_row == 2)
+            {
+                stage++;
+            }
+        }
+        if (stage == 2 && cnt % 5 == 0 && time <= threshold - total_food && statistic == 0)
+        {
+            display_statistic(statistic, time);
+            time++;
+            if (time > threshold - total_food)
+            {
+                time = 0;
+                statistic++;
+                wait = 200;
+            }
+        }
+        if (wait == 0 && cnt % 5 == 0 && time <= total_special_foods_eaten && statistic == 1)
+        {
+            display_statistic(statistic, time);
+            time++;
+            if (time > total_special_foods_eaten)
+            {
+                time = 0;
+                statistic++;
+                wait = 200;
+            }
+        }
+        if (wait == 0 && cnt % 5 == 0 && time <= total_ghosts_eaten && statistic == 2)
+        {
+            display_statistic(statistic, time);
+            time++;
+            if (time > total_ghosts_eaten)
+            {
+                time = 0;
+                statistic++;
+                wait = 200;
+                stage++;
+            }
+        }
+        if (wait == 0 && stage == 3 && time <= total_points) 
+        {
+            display_statistic(statistic, time);
+            time++;
+            if (time > total_points) {
+                stage++;
+                time = 0;
+                wait = 200;
+            }
+        }
+        if (wait == 0 && stage == 4 && cnt % 200 == 0) {
+            display_rating(time);
+            time++;
+            if (time > 5) {
+                break;
+            }
+        }
+        if (wait != 0)
+        {
+            wait--;
+        }
+        cnt++;
+        set_wait_timer(0, 5);
+    }
+}
+
+void display_ending_result(int col, int row)
+{
+    if (row != 13)
+    {
+        drawRectARGB32(10 + col * 25, 10 + (row + 1) * 24, 10 + col * 25 + 24, 10 + (row + 1) * 24 + 23, 0x00000000, 1);
+        drawRectARGB32(10 + (col + 1) * 25, 10 + (row + 1) * 24, 10 + (col + 1) * 25 + 24, 10 + (row + 1) * 24 + 23, 0x00000000, 1);
+        drawRectARGB32(10 + (col + 2) * 25, 10 + (row + 1) * 24, 10 + (col + 2) * 25 + 24, 10 + (row + 1) * 24 + 23, 0x00000000, 1);
+    }
+
+    if (end_game == 1)
+    {
+        drawRectARGB32(10 + col * 25, 10 + row * 24, 10 + col * 25 + 24, 10 + row * 24 + 23, 0x00000000, 1);
+        drawRectARGB32(10 + (col + 1) * 25, 10 + row * 24, 10 + (col + 1) * 25 + 24, 10 + row * 24 + 23, 0x00000000, 1);
+        drawRectARGB32(10 + (col + 2) * 25, 10 + row * 24, 10 + (col + 2) * 25 + 24, 10 + row * 24 + 23, 0x00000000, 1);
+        drawStringARGB32(238, 330 / 13.0f * row, "Game Over", 0x00FF00000);
+    }
+    else
+    {
+        drawRectARGB32(10 + col * 25, 10 + row * 24, 10 + col * 25 + 24, 10 + row * 24 + 23, 0x00000000, 1);
+        drawRectARGB32(10 + (col + 1) * 25, 10 + row * 24, 10 + (col + 1) * 25 + 24, 10 + row * 24 + 23, 0x00000000, 1);
+        drawRectARGB32(10 + (col + 2) * 25, 10 + row * 24, 10 + (col + 2) * 25 + 24, 10 + row * 24 + 23, 0x00000000, 1);
+        drawStringARGB32(240, 330 / 13.0f * row, "You Won", 0x00FF00);
+    }
+}
+
+void display_statistic(int value, int time)
+{
+    switch (value)
+    {
+    case 0: // Total foods
+        if (time == 0)
+        {
+            drawStringARGB32(120, 100, "Total foods eaten", 0x00FFFF00);
+        }
+        char *str_total_foods_eaten = "";
+        displayNumber(400, 100, 10, str_total_foods_eaten, 0x00000000);
+        copyString(str_total_foods_eaten, numDisplay(time));
+        displayNumber(400, 100, 10, str_total_foods_eaten, 0x00FFFF00);
+        break;
+    case 1: // Special foods consume
+        if (time == 0)
+        {
+            drawStringARGB32(120, 150, "Total special foods eaten", 0x00FFFF00);
+        }
+        char *str_total_special_foods_eaten = "";
+        displayNumber(400, 150, 10, str_total_special_foods_eaten, 0x00000000);
+        copyString(str_total_special_foods_eaten, numDisplay(time));
+        displayNumber(400, 150, 10, str_total_special_foods_eaten, 0x00FFFF00);
+        break;
+    case 2: // Ghosts eaten
+        if (time == 0)
+        {
+            drawStringARGB32(120, 200, "Total ghosts caught", 0x00FFFF00);
+        }
+        char *str_total_ghosts_eaten = "";
+        displayNumber(400, 200, 10, str_total_ghosts_eaten, 0x00000000);
+        copyString(str_total_ghosts_eaten, numDisplay(time));
+        displayNumber(400, 200, 10, str_total_ghosts_eaten, 0x00FFFF00);
+        break;
+    // case 4: // Time remaining
+    //     drawStringARGB32(240, 330 / 13.0f * row, "You Won", 0x00FFFF00);
+    //     break;
+    default: // Total score
+        if (time == 0)
+        {
+            for (int i = 3; i < 18; i++) {
+                drawRectARGB32(10 + i * 25, 10 + 10 * 24, 10 + i * 25 + 24, 10 + 10 * 24 + 5, 0x00FFFF00, 1);
+            }
+            drawStringARGB32(120, 295, "Total score", 0x00FFFF00);
+        }
+        char *str_total_points = "";
+        displayNumber(400, 295, 10, str_total_points, 0x00000000);
+        copyString(str_total_points, numDisplay(time));
+        displayNumber(400, 295, 10, str_total_points, 0x00FFFF00);
+        break;
+    }
+}
+
+void display_rating(int value) {
+    switch (value)
+    {
+    case 0:
+        drawObjectARGB32(120, 350, 32, 32, star_icon);
+        drawStringARGB32(200, 366, "Eat all the foods", 0x00FFFF00);
+        break;
+
+    case 1: 
+        drawObjectARGB32(120, 400, 32, 32, star_icon);
+        drawStringARGB32(200, 416, "Score at least 1100 pts", 0x00FFFF00);
+        break;
+    
+    case 2:
+        drawObjectARGB32(120, 450, 32, 32, star_icon);
+        drawStringARGB32(200, 466, "Caught at least 4 ghosts", 0x00FFFF00);
+        break;
+
+    case 3:
+        if (end_game == 1) { 
+            drawObjectARGB32(120, 350, 32, 32, star_fill_icon);
+        }
+        break;
+    
+    case 4:
+        if (total_points >= 1100) {
+            drawObjectARGB32(120, 400, 32, 32, star_fill_icon);
+        }
+        break;
+
+    default:
+        if (total_ghosts_eaten >= 4) {
+            drawObjectARGB32(120, 450, 32, 32, star_fill_icon);
+        }
+        break;
     }
 }
