@@ -211,4 +211,16 @@ void clearObject(int start_x, int start_y, int width, int height) {
     }
 }
 
+void displayNumber(int x, int y, int offset, char *input, unsigned int attr)
+{
+    // uart_puts("Input in display number: ");
+    int offset_temp = offset;
+    int count = 1;
+    for (int i = string_length(input) - 1; i >= 0; i--)
+    {
+        drawCharARGB32(x + offset_temp * count, y, input[i], attr);
+        count++;
+    }
+}
+
 

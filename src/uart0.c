@@ -178,6 +178,11 @@ unsigned int uart_isReadByteReady()
     return (UART0_FR & UART0_FR_RXFE);
 }
 
+void uart_clear()
+{
+    uart_puts("\e[1;1H\e[2J"); // clear
+}
+
 unsigned char getUart()
 {
     unsigned char ch = 0;

@@ -8,3 +8,4 @@ void drawImageARGB32(int x, int y, int starting_x_index, int starting_y_index, u
 void clearScreen();
 void drawObjectARGB32(int x, int y, int frame_width, int frame_height, unsigned long apac[]) ;
 void clearObject(int start_x, int start_y, int width, int height);
+void displayNumber(int x, int y, int offset, char *input, unsigned int attr);
