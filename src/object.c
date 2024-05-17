@@ -326,17 +326,17 @@ void move_ghost_scatter(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyd
     if (!is_all_out_of_house)
     {
         move_ghost_execute(pacman, pinky);
-        if (distance_square(blinky->point.row, blinky->point.col, pinky->point.row, pinky->point.col) > 30)
+        if (distance_square(blinky->point.row, blinky->point.col, pinky->point.row, pinky->point.col) > 5)
         {
             blinky->is_move = 1;
         }
-        if (distance_square(blinky->point.row, blinky->point.col, clyde->point.row, clyde->point.col) > 30 && !clyde->is_move)
+        if (distance_square(blinky->point.row, blinky->point.col, clyde->point.row, clyde->point.col) > 5 && !clyde->is_move)
         {
             clyde->is_move = 1;
             clyde->scatter_position.row = blinky->scatter_position.row;
             clyde->scatter_position.col = blinky->scatter_position.col;
         }
-        if (distance_square(clyde->point.row, clyde->point.col, inky->point.row, inky->point.col) > 10 && !inky->is_move)
+        if (distance_square(clyde->point.row, clyde->point.col, inky->point.row, inky->point.col) > 5 && !inky->is_move)
         {
             inky->is_move = 1;
             inky->scatter_position.row = blinky->scatter_position.row;
@@ -546,7 +546,7 @@ void process_next_move(Ghost *ghost, PriorityQueue dis[])
         if (dis[i].direction == 2)
         {
             if (ghost->previous_move != 0 && ghost->point.row < 23 && map[ghost->point.row + 1][ghost->point.col] != 1 &&
-                (ghost->point.row + 1 != gate.row || ghost->point.col != gate.col || ghost->status != 1))
+                (ghost->point.row + 1 != map_data[level].gate.row || ghost->point.col != map_data[level].gate.col || ghost->status != 1))
             {
                 // move to the new position
                 // increasing the row
@@ -613,25 +613,25 @@ void move_ghost_execute(Pacman *pacman, Ghost *ghost)
         {
             if (ghost->status == 2)
             {
-                uart_puts("To gate\n");
-                ghost->target_position.row = gate.row;
-                ghost->target_position.col = gate.col;
+                // uart_puts("To gate\n");
+                ghost->target_position.row = map_data[level].gate.row;
+                ghost->target_position.col = map_data[level].gate.col;
                 ghost->status = 3;
             }
-            else if (ghost->point.row == gate.row && ghost->point.col == gate.col && ghost->status == 3)
+            else if (ghost->point.row == map_data[level].gate.row && ghost->point.col == map_data[level].gate.col && ghost->status == 3)
             {
-                uart_puts("To house\n");
-                ghost->target_position.row = gate.row + 2;
-                ghost->target_position.col = gate.col;
+                // uart_puts("To house\n");
+                ghost->target_position.row = map_data[level].gate.row + 2;
+                ghost->target_position.col = map_data[level].gate.col;
                 ghost->status = 4;
             }
-            else if (ghost->point.row == gate.row + 2 && ghost->point.col != gate.col && ghost->status == 4)
+            else if (ghost->point.row == map_data[level].gate.row + 2 && ghost->point.col != map_data[level].gate.col && ghost->status == 4)
             {
-                uart_puts("Alive\n");
-                ghost->target_position.row = gate.row;
-                ghost->target_position.col = gate.col;
+                // uart_puts("Alive\n");
+                ghost->target_position.row = map_data[level].gate.row;
+                ghost->target_position.col = map_data[level].gate.col;
                 ghost->status = 5;
-            } else if (ghost->point.row == gate.row && ghost->point.col != gate.col && ghost->status == 5) {
+            } else if (ghost->point.row == map_data[level].gate.row && ghost->point.col != map_data[level].gate.col && ghost->status == 5) {
                 ghost->target_position.row = pacman->point.row;
                 ghost->target_position.col = pacman->point.col;
                 ghost->status = 0;
@@ -683,7 +683,7 @@ int random_move(Ghost *ghost, int direction)
     if (direction == 2)
     {
         if (ghost->previous_move != 0 && ghost->point.row < 23 && map[ghost->point.row + 1][ghost->point.col] != 1 &&
-            (ghost->point.row + 1 != gate.row || ghost->point.col != gate.col))
+            (ghost->point.row + 1 != map_data[level].gate.row || ghost->point.col != map_data[level].gate.col))
         {
             // move to the new position
             // increasing the row

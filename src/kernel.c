@@ -1,11 +1,7 @@
 //------------------------------main.h---------------------
 #include "framebf.h"
 #include "uart0.h"
-#include "gameimg.h"
-// #include "ultility.h"
-#include "map.h"
 #include "image.h"
-#include "object.h"
 #include "game.h"
 
 #define MAX_SIZE 500
@@ -22,27 +18,7 @@ const int OFFSET = 20;
 
 int y_index = 0;
 int x_index = 0;
-typedef struct
-{
-    int total_food;
-    int ghost_ability_to_move;
-    int score;
-    int game_status;
-} Game;
-
-// GAME INFO
-int scatter_mode = 1;
-int chase_mode = 0;
-int frighten_mode = 0;
-int total_food = 0;
-int total_points = 0;
-int total_special_foods_eaten = 0;
-int total_ghosts_eaten = 0;
-int is_all_out_of_house = 0;
-int end_game = 0;
-Point gate = {9, 10};
-
-int map[ROWS][COLS];
+int session = 0;
 
 void move_image(char c, int flag);
 void intro();
@@ -118,9 +94,11 @@ void process(char *input)
     {
         intro();
         restart_flag = 0;
+        session = 0;
     }
-    //////////////////////////////////////////////////////////////////
-    else if (stringcompare(buffer, "1") == 0)
+
+    //------------------------------move image---------------------
+    else if (stringcompare(buffer, "1") == 0 && session == 0)
     {
         uart_puts("\n");
 
@@ -173,36 +151,68 @@ void process(char *input)
         }
     }
 
-    ///////////////////////////////////////////////////////////////
-    else if (stringcompare(buffer, "3") == 0 || restart_flag == 1)
+    //------------------------------game's home screen---------------------
+    else if (stringcompare(buffer, "3") == 0 && session == 0)
     {
-        for (int i = 0; i < ROWS; i++)
-        {
-            for (int k = 0; k < COLS; k++)
-            {
-                map[i][k] = map_1[i][k];
-            }
-        }
-        //////////////////////////////////////
         clearScreen();
-
-        uart_puts("\nGame activated\n");
-
-        scatter_mode = 1;
-        chase_mode = 0;
-        frighten_mode = 0;
-        total_food = 0;
-        total_points = 0;
-        total_ghosts_eaten = 0;
-        total_special_foods_eaten = 0;
-        is_all_out_of_house = 0;
-        end_game = 0;
-
-        game(pacman, pinky, blinky, clyde, inky);
-        restart_flag = 1;
+        display_home_screen();
+        session++;
         uart_puts("\n Type exit to exit out of the game, any button to replay the game");
     }
 
+    //------------------------------select level---------------------
+    else if ((stringcompare(buffer, "1") == 0 && session == 1))
+    {
+        clearScreen();
+        level = 0;
+        level_preview();
+        uart_puts("\n Type exit to exit out of the game, any button to replay the game");
+    }
+    else if ((stringcompare(buffer, "a") == 0 && session == 1))
+    {
+        clearScreen();
+        if (level > 0)
+        {
+            level--;
+        }
+        level_preview();
+        uart_puts("\n Type exit to exit out of the game, any button to replay the game");
+    }
+    else if ((stringcompare(buffer, "d") == 0 && session == 1))
+    {
+        clearScreen();
+        if (level < 4)
+        {
+            level++;
+        }
+        level_preview();
+        uart_puts("\n Type exit to exit out of the game, any button to replay the game");
+    }
+
+    //------------------------------play game---------------------
+    else if ((stringcompare(buffer, "") == 0))
+    {
+        if (level != 0 && !map_data[level - 1].mission1.is_done)
+        {
+            uart_puts("Please finished previous map by eating all the food first");
+        }
+        else
+        {
+            session++;
+            //////////////////////////////////////
+            clearScreen();
+
+            uart_puts("\nGame activated\n");
+
+            game_init();
+
+            game(pacman, pinky, blinky, clyde, inky);
+            restart_flag = 1;
+            uart_puts("\n Type exit to exit out of the game, any button to replay the game");
+        }
+    }
+
+    //------------------------------clear cli---------------------
     else if (stringcompare(buffer, "clear") == 0)
     {
         uart_clear();

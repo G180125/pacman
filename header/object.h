@@ -6,6 +6,7 @@
 #include "framebf.h"
 #include "uart0.h"
 #include "game.h"
+#include "map.h"
 
 #ifndef POINT_H
 #define POINT_H

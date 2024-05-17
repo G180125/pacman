@@ -64,6 +64,9 @@
     "ultility.h": "c",
     "framebf.h": "c",
     "uart0.h": "c",
-    "game.h": "c"
+    "game.h": "c",
+    "__tree": "c",
+    "map": "c",
+    "homescreen.h": "c"
   }
 }

@@ -63,4 +63,12 @@ extern unsigned long star_fill_icon[];
 
 extern unsigned long star_icon[];
 
+extern unsigned long home_screen[];
+
+extern unsigned long back_button[];
+
+extern unsigned long forward_button[];
+
+extern unsigned long lock[];
+
 #endif 

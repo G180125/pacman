@@ -1,4 +1,141 @@
 #include "game.h"
+// #include "homescreen.h"
+
+// GAME INFO
+int scatter_mode = 1;
+int chase_mode = 0;
+int frighten_mode = 0;
+int total_food = 0;
+int total_points = 0;
+int total_special_foods_eaten = 0;
+int total_ghosts_eaten = 0;
+int is_all_out_of_house = 0;
+int end_game = 0;
+int level = 0;
+
+int map[ROWS][COLS];
+
+void display_home_screen()
+{
+    drawObjectARGB32(12, 5, 524, 639, home_screen);
+    drawStringARGB32(170, 490, "Press 1 to play game", 0x00FFFF00);
+    drawStringARGB32(170, 533, "Press 2 to see instruction", 0x00F07420);
+    drawStringARGB32(170, 576, "Press 3 to return main menu", 0x00FF00000);
+}
+
+void level_preview()
+{
+    draw_map_preview();
+    if (level != 0 && !map_data[level-1].mission1.is_done)
+    {
+        drawObjectARGB32(198, 380, 145, 200, lock);
+    }
+    else
+    {
+        display_statistic_overall();
+    }
+
+    if (level != 0)
+    {
+        drawObjectARGB32(27, 270, 60, 110, back_button);
+    }
+    if (level != 4)
+    {
+        drawObjectARGB32(464, 270, 60, 110, forward_button);
+    }
+}
+
+void draw_map_preview()
+{
+    // loop through the 2D map
+    for (int i = 0; i < ROWS; ++i)
+    {
+        for (int j = 0; j < COLS; ++j)
+        {
+            // calculate x1, y1, x2, y2 of every box in the map
+            // each box has a width of 25 and height of 24
+            int start_x = 115 + (15 * j);
+            int end_x = start_x + 15;
+            int start_y = 5 + (14 * i);
+            int end_y = start_y + 14;
+
+            if (map_data[level].map[i][j] == 1)
+            { // if this is a wall
+                // draw a bule rectangal
+                drawRectARGB32(start_x, start_y, end_x, end_y, 0x000000CC, 2);
+            }
+            else if (map_data[level].map[i][j] == 5)
+            { // teleport gate
+                // draw a black rectangle
+                drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
+
+                int food_start_x = (start_x + end_x) / 2 - 8;
+                int food_start_y = (start_y + end_y) / 2 - 8;
+                drawObjectARGB32(food_start_x, food_start_y, 16, 16, teleport_gate);
+            }
+            else if (map_data[level].map[i][j] != -1 && map_data[level].map[i][j] != 0)
+            {
+                // draw the food
+                // the food is place in the middle of the reactangle
+                // the food has a width of 8 and a height of 6
+                int food_start_x = (start_x + end_x) / 2 - 4;
+                int food_end_x = (start_x + end_x) / 2 + 4;
+                int food_start_y = (start_y + end_y) / 2 - 3;
+                int food_end_y = (start_y + end_y) / 2 + 3;
+                drawRectARGB32(food_start_x, food_start_y, food_end_x, food_end_y, 0xFFFFAA88, 1);
+            }
+        }
+    }
+}
+
+void display_statistic_overall()
+{
+    drawStringARGB32(120, 380, "Highest score", 0x00FFFF00);
+    char *str_highest_score = "";
+    copyString(str_highest_score, numDisplay(map_data[level].highest_score));
+    displayNumber(250, 380, 10, str_highest_score, 0x00FFFF00);
+
+    if (map_data[level].mission1.is_done)
+    {
+        drawObjectARGB32(120, 430, 32, 32, star_fill_icon);
+    }
+    else
+    {
+        drawObjectARGB32(120, 430, 32, 32, star_icon);
+    }
+    drawStringARGB32(200, 446, map_data[level].mission1.description, 0x00FFFF00);
+
+    if (map_data[level].mission2.is_done)
+    {
+        drawObjectARGB32(120, 480, 32, 32, star_fill_icon);
+    }
+    else
+    {
+        drawObjectARGB32(120, 480, 32, 32, star_icon);
+    }
+    drawStringARGB32(200, 496, map_data[level].mission2.description, 0x00FFFF00);
+
+    if (map_data[level].mission3.is_done)
+    {
+        drawObjectARGB32(120, 530, 32, 32, star_fill_icon);
+    }
+    else
+    {
+        drawObjectARGB32(120, 530, 32, 32, star_icon);
+    }
+    drawStringARGB32(200, 546, map_data[level].mission3.description, 0x00FFFF00);
+}
+
+void get_map()
+{
+    for (int i = 0; i < ROWS; i++)
+    {
+        for (int j = 0; j < COLS; j++)
+        {
+            map[i][j] = map_data[level].map[i][j];
+        }
+    }
+}
 
 void draw_map()
 {
@@ -14,12 +151,12 @@ void draw_map()
             int start_y = 10 + (24 * i);
             int end_y = start_y + 24;
 
-            if (map[i][j] == 1)
+            if (map_data[level].map[i][j] == 1)
             { // if this is a wall
                 // draw a bule rectangal
                 drawRectARGB32(start_x, start_y, end_x, end_y, 0x000000CC, 2);
             }
-            else if (map[i][j] == 2 || map[i][j] == 3)
+            else if (map_data[level].map[i][j] == 2 || map_data[level].map[i][j] == 3)
             { // if this is a road
                 // draw a black rectangle
                 // drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
@@ -34,7 +171,7 @@ void draw_map()
                 drawRectARGB32(food_start_x, food_start_y, food_end_x, food_end_y, 0xFFFFAA88, 1);
                 total_food++;
             }
-            else if (map[i][j] == 5)
+            else if (map_data[level].map[i][j] == 5)
             { // teleport gate
                 // draw a black rectangle
                 drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
@@ -43,7 +180,7 @@ void draw_map()
                 int food_start_y = (start_y + end_y) / 2 - 8;
                 drawObjectARGB32(food_start_x, food_start_y, 16, 16, teleport_gate);
             }
-            else if (map[i][j] == 6)
+            else if (map_data[level].map[i][j] == 6)
             { // freeze ghost
                 // draw a black rectangle
                 drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
@@ -52,7 +189,7 @@ void draw_map()
                 int food_start_y = (start_y + end_y) / 2 - 8;
                 drawObjectARGB32(food_start_x, food_start_y, 16, 16, freeze_ghosts_food);
             }
-            else if (map[i][j] == 7)
+            else if (map_data[level].map[i][j] == 7)
             { // reversed food
                 // draw a black rectangle
                 drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
@@ -61,7 +198,7 @@ void draw_map()
                 int food_start_y = (start_y + end_y) / 2 - 8;
                 drawObjectARGB32(food_start_x, food_start_y, 16, 16, reverse_food);
             }
-            else if (map[i][j] == 8)
+            else if (map_data[level].map[i][j] == 8)
             { // double score
                 // draw a black rectangle
                 drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
@@ -70,7 +207,7 @@ void draw_map()
                 int food_start_y = (start_y + end_y) / 2 - 8;
                 drawObjectARGB32(food_start_x, food_start_y, 16, 16, double_score_food);
             }
-            else if (map[i][j] == 9)
+            else if (map_data[level].map[i][j] == 9)
             { // invisible food
                 // draw a black rectangle
                 drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
@@ -79,7 +216,7 @@ void draw_map()
                 int food_start_y = (start_y + end_y) / 2 - 8;
                 drawObjectARGB32(food_start_x, food_start_y, 16, 16, invisible_food);
             }
-            else if (map[i][j] == 10)
+            else if (map_data[level].map[i][j] == 10)
             { // shield food
                 // draw a black rectangle
                 drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
@@ -88,7 +225,7 @@ void draw_map()
                 int food_start_y = (start_y + end_y) / 2 - 8;
                 drawObjectARGB32(food_start_x, food_start_y, 16, 16, shield_food);
             }
-            else if (map[i][j] == 11)
+            else if (map_data[level].map[i][j] == 11)
             { // random effect food
                 // draw a black rectangle
                 drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
@@ -97,7 +234,7 @@ void draw_map()
                 int food_start_y = (start_y + end_y) / 2 - 8;
                 drawObjectARGB32(food_start_x, food_start_y, 16, 16, random_effect_food);
             }
-            else if (map[i][j] == 12)
+            else if (map_data[level].map[i][j] == 12)
             { // random effect food
                 // draw a black rectangle
                 drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
@@ -116,11 +253,24 @@ void draw_map()
     threshold = total_food;
 }
 
+void game_init()
+{
+    scatter_mode = 1;
+    chase_mode = 0;
+    frighten_mode = 0;
+    total_food = 0;
+    total_points = 0;
+    total_ghosts_eaten = 0;
+    total_special_foods_eaten = 0;
+    is_all_out_of_house = 0;
+    end_game = 0;
+}
+
 void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 {
-    // clearScreen();
+    get_map();
     // draw the map
-    draw_map(map);
+    draw_map();
     draw_ghost(&pinky);
     draw_ghost(&blinky);
     draw_ghost(&clyde);
@@ -140,7 +290,6 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
     // displayNumber(910, 600, 10, str_threshold, 0xFFFFFF);
     // uart_puts("\nThreshold: ");
     //  uart_puts(numDisplay(threshold));
-
     while (1)
     {
         set_wait_timer(1, 20);
@@ -214,16 +363,17 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             }
             else
             {
-                // After 20s, change to chase mode
-                if (((cnt - 1000) % 1500 == 0 && scatter_mode == 1) || cnt == 1000)
+                // After scatter_duration, change to chase mode
+                if (((cnt - (map_data[level].scatter_duration * 1000 / 20)) % ((map_data[level].scatter_duration + map_data[level].scatter_duration)* 1000 / 20) == 0 && 
+                    scatter_mode == 1))
                 {
-                    uart_puts("chase\n");
+                    // uart_puts("chase\n");
                     scatter_mode = 0;
                     chase_mode = 1;
                 }
-                else if (cnt % 1500 == 0 && chase_mode == 1)
-                { // After 10s, back to scatter mode
-                    uart_puts("scatter\n");
+                else if (cnt % ((map_data[level].scatter_duration + map_data[level].chase_duration) * 1000 / 20) == 0 && chase_mode == 1)
+                { // After chase_duration, back to scatter mode
+                    // uart_puts("scatter\n");
                     scatter_mode = 1;
                     chase_mode = 0;
                 }
@@ -257,7 +407,6 @@ int is_eaten(Pacman pacman, Ghost *ghost)
             // Increase score
             char *str_total_points = "";
             displayNumber(850, 600, 10, str_total_points, 0x000000);
-            // decrease the total food
             total_points += FOOD_POINTS * 4;
 
             copyString(str_total_points, numDisplay(total_points));
@@ -541,6 +690,10 @@ void display_statistic(int value, int time)
         if (time == 0)
         {
             drawStringARGB32(120, 100, "Total foods eaten", 0x00FFFF00);
+            if (total_food == 0 && !map_data[level].mission1.is_done)
+            {
+                map_data[level].mission1.is_done = 1;
+            }
         }
         char *str_total_foods_eaten = "";
         displayNumber(400, 100, 10, str_total_foods_eaten, 0x00000000);
@@ -561,6 +714,10 @@ void display_statistic(int value, int time)
         if (time == 0)
         {
             drawStringARGB32(120, 200, "Total ghosts caught", 0x00FFFF00);
+            if (total_food == 0 && !map_data[level].mission3.is_done && total_ghosts_eaten >= map_data[level].mission3.goal)
+            {
+                map_data[level].mission3.is_done = 1;
+            }
         }
         char *str_total_ghosts_eaten = "";
         displayNumber(400, 200, 10, str_total_ghosts_eaten, 0x00000000);
@@ -573,6 +730,14 @@ void display_statistic(int value, int time)
     default: // Total score
         if (time == 0)
         {
+            if (total_points > map_data[level].highest_score)
+            {
+                map_data[level].highest_score = total_points;
+            }
+            if (!map_data[level].mission2.is_done && total_points >= map_data[level].mission2.goal)
+            {
+                map_data[level].mission2.is_done = 1;
+            }
             for (int i = 3; i < 18; i++)
             {
                 drawRectARGB32(10 + i * 25, 10 + 10 * 24, 10 + i * 25 + 24, 10 + 10 * 24 + 5, 0x00FFFF00, 1);
@@ -598,12 +763,12 @@ void display_rating(int value)
 
     case 1:
         drawObjectARGB32(120, 400, 32, 32, star_icon);
-        drawStringARGB32(200, 416, "Score at least 1100 pts", 0x00FFFF00);
+        drawStringARGB32(200, 416, map_data[level].mission2.description, 0x00FFFF00);
         break;
 
     case 2:
         drawObjectARGB32(120, 450, 32, 32, star_icon);
-        drawStringARGB32(200, 466, "Caught at least 4 ghosts", 0x00FFFF00);
+        drawStringARGB32(200, 466, map_data[level].mission3.description, 0x00FFFF00);
         break;
 
     case 3:
