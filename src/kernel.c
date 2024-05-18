@@ -19,6 +19,7 @@ const int OFFSET = 20;
 int y_index = 0;
 int x_index = 0;
 int session = 0;
+int page = 0;
 
 void move_image(char c, int flag);
 void intro();
@@ -32,6 +33,7 @@ void main()
     uart_puts("\n\nWELCOME TO GROUP 7 BARE OS, CHECK THE MONITOR FOR INSTRUCTION\n");
     // Initialize frame buffer
     framebf_init();
+    uart_puts("UART default state (Baud rate: 115200 , Parity: None, Word length: 8 bits, Stop bit: 1 bit, Handshaking Protocol: None) \n");
     intro();
 
     uart_puts("\n" preText);
@@ -156,7 +158,7 @@ void process(char *input)
     {
         clearScreen();
         display_home_screen();
-        session++;
+        session = 1;
         uart_puts("\n Type exit to exit out of the game, any button to replay the game");
     }
 
@@ -190,7 +192,7 @@ void process(char *input)
     }
 
     //------------------------------play game---------------------
-    else if ((stringcompare(buffer, "") == 0))
+    else if (((stringcompare(buffer, "\0") == 0) && session == 1) || restart_flag)
     {
         if (level != 0 && !map_data[level - 1].mission1.is_done)
         {
@@ -198,7 +200,6 @@ void process(char *input)
         }
         else
         {
-            session++;
             //////////////////////////////////////
             clearScreen();
 
@@ -210,6 +211,35 @@ void process(char *input)
             restart_flag = 1;
             uart_puts("\n Type exit to exit out of the game, any button to replay the game");
         }
+    }
+
+    //------------------------------see instruction---------------------
+    else if (((stringcompare(buffer, "2") == 0) && session == 1))
+    {
+        clearScreen();
+        session = 2;
+        page = 0;
+        display_instruction(page);
+    }
+    else if (((stringcompare(buffer, "a") == 0) && session == 2))
+    {
+        clearScreen();
+        clearScreen();
+        if (page > 0)
+        {
+            page--;
+        }
+        display_instruction(page);
+    }
+    else if (((stringcompare(buffer, "d") == 0) && session == 2))
+    {
+        clearScreen();
+        clearScreen();
+        if (page < 5)
+        {
+            page++;
+        }
+        display_instruction(page);
     }
 
     //------------------------------clear cli---------------------

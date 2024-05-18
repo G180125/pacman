@@ -106,6 +106,7 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
 
 void get_map();
 void level_preview();
+void display_instruction(int page);
 void display_home_screen();
 void game_init();
 void display_ending_screen();

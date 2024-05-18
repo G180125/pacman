@@ -71,4 +71,6 @@ extern unsigned long forward_button[];
 
 extern unsigned long lock[];
 
+extern unsigned long pacman_help[];
+
 #endif 

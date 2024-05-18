@@ -12,8 +12,39 @@ int total_ghosts_eaten = 0;
 int is_all_out_of_house = 0;
 int end_game = 0;
 int level = 0;
+int cnt = 0;
 
 int map[ROWS][COLS];
+
+void display_instruction(int page) 
+{
+    if (page != 0)
+    {
+        drawObjectARGB32(27, 270, 60, 110, back_button);
+    }
+    if (page != 4)
+    {
+        drawObjectARGB32(464, 270, 60, 110, forward_button);
+    }
+    if (page == 0)
+    {
+        drawStringARGB32(253, 30, "Pacman", 0x00FFFF00);
+        drawObjectARGB32(90, 60, 369, 455, pacman_help);
+        drawStringARGB32(90, 250, "Press a/w/s/d buttons to go up/left/down/right.", 0x00FFFF00);
+        drawStringARGB32(165, 530, "Try to move around the maze", 0x00FFFF00);
+        drawStringARGB32(127, 550, "and eat all the food to win the game!", 0x00FFFF00);
+    }
+    if (page == 1)
+    {
+        drawStringARGB32(253, 30, "Ghosts", 0x0000FF00);
+
+    }
+    if (page == 2) 
+    {
+        drawStringARGB32(240, 30, "Special items", 0x00FF0000);
+
+    }
+}
 
 void display_home_screen()
 {
@@ -275,7 +306,6 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
     draw_ghost(&blinky);
     draw_ghost(&clyde);
     draw_ghost(&inky);
-    int cnt = 0;
     // uart_sendc(total_food); total_food is correct
     char *str_total_points = "";
     // char *str_threshold = "";
@@ -634,6 +664,9 @@ void display_ending_screen()
             time++;
             if (time > total_points)
             {
+                if (map_data[level].highest_score == total_points) {
+                    drawStringARGB32(485, 295, "New!", 0x00FF0000);
+                }
                 stage++;
                 time = 0;
                 wait = 200;
@@ -678,7 +711,7 @@ void display_ending_result(int col, int row)
         drawRectARGB32(10 + col * 25, 10 + row * 24, 10 + col * 25 + 24, 10 + row * 24 + 23, 0x00000000, 1);
         drawRectARGB32(10 + (col + 1) * 25, 10 + row * 24, 10 + (col + 1) * 25 + 24, 10 + row * 24 + 23, 0x00000000, 1);
         drawRectARGB32(10 + (col + 2) * 25, 10 + row * 24, 10 + (col + 2) * 25 + 24, 10 + row * 24 + 23, 0x00000000, 1);
-        drawStringARGB32(240, 330 / 13.0f * row, "You Won", 0x00FF00);
+        drawStringARGB32(240, 330 / 13.0f * row, "You Won", 0x0000FF00);
     }
 }
 
@@ -779,14 +812,14 @@ void display_rating(int value)
         break;
 
     case 4:
-        if (total_points >= 1100)
+        if (total_points >= map_data[level].mission2.goal)
         {
             drawObjectARGB32(120, 400, 32, 32, star_fill_icon);
         }
         break;
 
     default:
-        if (total_ghosts_eaten >= 4)
+        if (total_ghosts_eaten >= map_data[level].mission3.goal)
         {
             drawObjectARGB32(120, 450, 32, 32, star_fill_icon);
         }
