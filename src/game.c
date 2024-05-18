@@ -13,6 +13,7 @@ int is_all_out_of_house = 0;
 int end_game = 0;
 int level = 0;
 int cnt = 0;
+int map[ROWS][COLS];	
 
 void display_instruction(int page) 
 {
@@ -187,6 +188,17 @@ void display_statistic_overall()
     drawStringARGB32(200, 546, map_data[level].mission3.description, 0x00FFFF00);
 }
 
+void get_map()	
+{	
+    for (int i = 0; i < ROWS; i++)	
+    {	
+        for (int j = 0; j < COLS; j++)	
+        {	
+            map[i][j] = map_data[level].map[i][j];	
+        }	
+    }	
+}
+
 void draw_map()
 {
     // loop through the 2D map
@@ -305,6 +317,7 @@ void game_init()
 
 void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 {
+    get_map();
     // draw the map
     draw_map();
     draw_ghost(&pinky);
@@ -817,14 +830,14 @@ void display_rating(int value)
         break;
 
     case 4:
-        if (total_points >= map_data[level].mission2.goal)
+        if (total_food == 0 && total_points >= map_data[level].mission2.goal)
         {
             drawObjectARGB32(120, 400, 32, 32, star_fill_icon);
         }
         break;
 
     default:
-        if (total_ghosts_eaten >= map_data[level].mission3.goal)
+        if (total_food == 0 && total_ghosts_eaten >= map_data[level].mission3.goal)
         {
             drawObjectARGB32(120, 450, 32, 32, star_fill_icon);
         }
