@@ -1,6 +1,8 @@
+#define PAGE_WIDTH 369
+#define PAGE_HEIGHT 455
+
 #ifndef GAMEIMG_H
 #define GAMEIMG_H
-
 
 // 'pacman_frame_0', 20x20px
 extern unsigned long pacman_frame_0[];
@@ -72,5 +74,13 @@ extern unsigned long forward_button[];
 extern unsigned long lock[];
 
 extern unsigned long pacman_help[];
+
+extern unsigned long ghost_help[];
+
+extern unsigned long special_foods_help[];
+
+extern unsigned long power_up_help[];
+
+extern unsigned long team_logo[];
 
 #endif 

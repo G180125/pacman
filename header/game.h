@@ -91,7 +91,6 @@ extern int total_food;
 extern int threshold;
 extern int end_game;
 extern int level;
-extern int map[ROWS][COLS];
 
 void draw_map();
 void draw_map_preview();

@@ -25,8 +25,8 @@ Ghost pinky = {
     0,
     0,
     {pinky_frame,
-    frightened_ghost_frame,
-    eaten_ghost_frame}};
+     frightened_ghost_frame,
+     eaten_ghost_frame}};
 
 Ghost blinky = {
     {10, 11},
@@ -38,8 +38,8 @@ Ghost blinky = {
     0,
     0,
     {blinky_frame,
-    frightened_ghost_frame,
-    eaten_ghost_frame}};
+     frightened_ghost_frame,
+     eaten_ghost_frame}};
 
 Ghost clyde = {
     {11, 9},
@@ -51,8 +51,8 @@ Ghost clyde = {
     0,
     0,
     {clyde_frame,
-    frightened_ghost_frame,
-    eaten_ghost_frame}};
+     frightened_ghost_frame,
+     eaten_ghost_frame}};
 
 Ghost inky = {
     {11, 11},
@@ -64,8 +64,8 @@ Ghost inky = {
     0,
     0,
     {inky_frame,
-    frightened_ghost_frame,
-    eaten_ghost_frame}};
+     frightened_ghost_frame,
+     eaten_ghost_frame}};
 
 void draw_pacman(Pacman *pacman)
 {
@@ -152,13 +152,13 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
 
         // if the under position is a wall
         // pacman cannot move down
-        if (map[pacman->point.row + 1][pacman->point.col] == 1)
+        if (map_data[level].map[pacman->point.row + 1][pacman->point.col] == 1)
         {
             return;
         }
 
         // clearing the pacman's old position in the map
-        map[pacman->point.row][pacman->point.col] = 0;
+        map_data[level].map[pacman->point.row][pacman->point.col] = 0;
 
         // move to the new position
         // increasing the row
@@ -177,13 +177,13 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
 
         // if the above position is a wall
         // pacman cannot move down
-        if (map[pacman->point.row - 1][pacman->point.col] == 1)
+        if (map_data[level].map[pacman->point.row - 1][pacman->point.col] == 1)
         {
             return;
         }
 
         // clearing the pacman's old position in the map
-        map[pacman->point.row][pacman->point.col] = 0;
+        map_data[level].map[pacman->point.row][pacman->point.col] = 0;
 
         // move to the new position
         // decreasing the row
@@ -202,13 +202,13 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
 
         // if the right position is a wall
         // pacman cannot move right
-        if (map[pacman->point.row][pacman->point.col + 1] == 1)
+        if (map_data[level].map[pacman->point.row][pacman->point.col + 1] == 1)
         {
             return;
         }
 
         // clearing the pacman's old position in the map
-        map[pacman->point.row][pacman->point.col] = 0;
+        map_data[level].map[pacman->point.row][pacman->point.col] = 0;
 
         // move to the new position
         // increasing the collumn
@@ -227,13 +227,13 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
 
         // if the left position is a wall
         // pacman cannot move left
-        if (map[pacman->point.row][pacman->point.col - 1] == 1)
+        if (map_data[level].map[pacman->point.row][pacman->point.col - 1] == 1)
         {
             return;
         }
 
         // clearing the pacman's old position in the map
-        map[pacman->point.row][pacman->point.col] = 0;
+        map_data[level].map[pacman->point.row][pacman->point.col] = 0;
 
         // move to the new position
         // decreasing the collumn
@@ -243,7 +243,7 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
     }
 
     // if the new position has a food
-    if (map[pacman->point.row][pacman->point.col] == 2 || map[pacman->point.row][pacman->point.col] == 3)
+    if (map_data[level].map[pacman->point.row][pacman->point.col] == 2 || map_data[level].map[pacman->point.row][pacman->point.col] == 3)
     {
         // uart_puts("Points remaining: ");
         // uart_dec(total_food);
@@ -266,28 +266,28 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
         displayNumber(850, 600, 10, str_total_points, 0xFFFFFF);
     }
     // if the pacman has eaten a freeze ghosts food
-    else if (map[pacman->point.row][pacman->point.col] == 6)
+    else if (map_data[level].map[pacman->point.row][pacman->point.col] == 6)
     {
         pacman->special_foods.active++;
         pacman->special_foods.freeze_ghosts = 1;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a reversed food
-    else if (map[pacman->point.row][pacman->point.col] == 7)
+    else if (map_data[level].map[pacman->point.row][pacman->point.col] == 7)
     {
         pacman->special_foods.active++;
         pacman->special_foods.reversed = 1;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a invisible food
-    else if (map[pacman->point.row][pacman->point.col] == 9)
+    else if (map_data[level].map[pacman->point.row][pacman->point.col] == 9)
     {
         pacman->special_foods.active++;
         pacman->special_foods.invisible = 1;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a power_up food
-    else if (map[pacman->point.row][pacman->point.col] == 12)
+    else if (map_data[level].map[pacman->point.row][pacman->point.col] == 10)
     {
         pacman->special_foods.active++;
         pacman->special_foods.power_up = 1;
@@ -295,7 +295,7 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
     }
 
     // mark the new position of pacman on the map
-    map[pacman->point.row][pacman->point.col] = 4;
+    map_data[level].map[pacman->point.row][pacman->point.col] = 4;
 
     // clearing the old pacman in the screen
     clearObject(pacman_old_x_position, pacman_old_y_position, pacman->size.width, pacman->size.height);
@@ -513,8 +513,8 @@ void process_next_move(Ghost *ghost, PriorityQueue dis[])
     {
         if (dis[i].direction == 0)
         {
-            if (ghost->previous_move != 2 && ghost->point.row > 1 && map[ghost->point.row - 1][ghost->point.col] != 1 &&
-                map[ghost->point.row][ghost->point.col] != 3)
+            if (ghost->previous_move != 2 && ghost->point.row > 1 && map_data[level].map[ghost->point.row - 1][ghost->point.col] != 1 &&
+                map_data[level].map[ghost->point.row][ghost->point.col] != 3)
             {
                 // move to the new position
                 // increasing the row
@@ -529,8 +529,8 @@ void process_next_move(Ghost *ghost, PriorityQueue dis[])
 
         if (dis[i].direction == 1)
         {
-            if (ghost->previous_move != 3 && ghost->point.col > 0 && map[ghost->point.row][ghost->point.col - 1] != 1 &&
-                map[ghost->point.row][ghost->point.col - 1] != 5)
+            if (ghost->previous_move != 3 && ghost->point.col > 0 && map_data[level].map[ghost->point.row][ghost->point.col - 1] != 1 &&
+                map_data[level].map[ghost->point.row][ghost->point.col - 1] != 5)
             {
                 // move to the new position
                 // decreasing the collumn
@@ -545,7 +545,7 @@ void process_next_move(Ghost *ghost, PriorityQueue dis[])
 
         if (dis[i].direction == 2)
         {
-            if (ghost->previous_move != 0 && ghost->point.row < 23 && map[ghost->point.row + 1][ghost->point.col] != 1 &&
+            if (ghost->previous_move != 0 && ghost->point.row < 23 && map_data[level].map[ghost->point.row + 1][ghost->point.col] != 1 &&
                 (ghost->point.row + 1 != map_data[level].gate.row || ghost->point.col != map_data[level].gate.col || ghost->status != 1))
             {
                 // move to the new position
@@ -561,8 +561,8 @@ void process_next_move(Ghost *ghost, PriorityQueue dis[])
         if (dis[i].direction == 3)
 
         {
-            if (ghost->previous_move != 1 && ghost->point.col < 22 && map[ghost->point.row][ghost->point.col + 1] != 1 &&
-                map[ghost->point.row][ghost->point.col + 1] != 5)
+            if (ghost->previous_move != 1 && ghost->point.col < 22 && map_data[level].map[ghost->point.row][ghost->point.col + 1] != 1 &&
+                map_data[level].map[ghost->point.row][ghost->point.col + 1] != 5)
             {
                 // move to the new position
                 // increasing the collumn
@@ -631,7 +631,9 @@ void move_ghost_execute(Pacman *pacman, Ghost *ghost)
                 ghost->target_position.row = map_data[level].gate.row;
                 ghost->target_position.col = map_data[level].gate.col;
                 ghost->status = 5;
-            } else if (ghost->point.row == map_data[level].gate.row && ghost->point.col != map_data[level].gate.col && ghost->status == 5) {
+            }
+            else if (ghost->point.row == map_data[level].gate.row && ghost->point.col != map_data[level].gate.col && ghost->status == 5)
+            {
                 ghost->target_position.row = pacman->point.row;
                 ghost->target_position.col = pacman->point.col;
                 ghost->status = 0;
@@ -650,8 +652,8 @@ int random_move(Ghost *ghost, int direction)
 {
     if (direction == 0)
     {
-        if (ghost->previous_move != 2 && ghost->point.row > 1 && map[ghost->point.row - 1][ghost->point.col] != 1 &&
-            map[ghost->point.row][ghost->point.col] != 3)
+        if (ghost->previous_move != 2 && ghost->point.row > 1 && map_data[level].map[ghost->point.row - 1][ghost->point.col] != 1 &&
+            map_data[level].map[ghost->point.row][ghost->point.col] != 3)
         {
             // move to the new position
             // increasing the row
@@ -666,8 +668,8 @@ int random_move(Ghost *ghost, int direction)
 
     if (direction == 1)
     {
-        if (ghost->previous_move != 3 && ghost->point.col > 0 && map[ghost->point.row][ghost->point.col - 1] != 1 &&
-            map[ghost->point.row][ghost->point.col - 1] != 5)
+        if (ghost->previous_move != 3 && ghost->point.col > 0 && map_data[level].map[ghost->point.row][ghost->point.col - 1] != 1 &&
+            map_data[level].map[ghost->point.row][ghost->point.col - 1] != 5)
         {
             // move to the new position
             // decreasing the collumn
@@ -682,7 +684,7 @@ int random_move(Ghost *ghost, int direction)
 
     if (direction == 2)
     {
-        if (ghost->previous_move != 0 && ghost->point.row < 23 && map[ghost->point.row + 1][ghost->point.col] != 1 &&
+        if (ghost->previous_move != 0 && ghost->point.row < 23 && map_data[level].map[ghost->point.row + 1][ghost->point.col] != 1 &&
             (ghost->point.row + 1 != map_data[level].gate.row || ghost->point.col != map_data[level].gate.col))
         {
             // move to the new position
@@ -697,8 +699,8 @@ int random_move(Ghost *ghost, int direction)
     }
     if (direction == 3)
     {
-        if (ghost->previous_move != 1 && ghost->point.col < 22 && map[ghost->point.row][ghost->point.col + 1] != 1 && 
-            map[ghost->point.row][ghost->point.col + 1] != 5)
+        if (ghost->previous_move != 1 && ghost->point.col < 22 && map_data[level].map[ghost->point.row][ghost->point.col + 1] != 1 &&
+            map_data[level].map[ghost->point.row][ghost->point.col + 1] != 5)
         {
             // move to the new position
             // increasing the collumn
@@ -719,7 +721,7 @@ void draw_food_after_ghosts_move(Ghost *ghost)
     // clearing the old ghosts in the screen
     // draw back the foods
     clearObject(ghost->pixel_position.x, ghost->pixel_position.y, ghost->size.width, ghost->size.height);
-    if (map[ghost->point.row][ghost->point.col] == 2 || map[ghost->point.row][ghost->point.col] == 3)
+    if (map_data[level].map[ghost->point.row][ghost->point.col] == 2 || map_data[level].map[ghost->point.row][ghost->point.col] == 3)
     {
         drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 24, 10 + ghost->point.row * 24 + 23, 0xFF000000, 1);
         int food_start_x = (2 * ghost->pixel_position.x + 25) / 2 - 6;
@@ -728,7 +730,13 @@ void draw_food_after_ghosts_move(Ghost *ghost)
         int food_end_y = (2 * ghost->pixel_position.y + 24) / 2 + 3;
         drawRectARGB32(food_start_x, food_start_y, food_end_x, food_end_y, 0xFFFFAA88, 1);
     }
-    else if (map[ghost->point.row][ghost->point.col] == 6)
+    else if (ghost->point.row == map_data[level].gate.row && ghost->point.col == map_data[level].gate.col)
+    { // if this is a gate
+        // draw a blue small rectangal
+        drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 24, 10 + ghost->point.row * 24 + 23, 0xFF000000, 1);
+        drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22 - 16, 0x000000CC, 2);
+    }
+    else if (map_data[level].map[ghost->point.row][ghost->point.col] == 6)
     { // freeze ghost
         // draw a black rectangle
         drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);
@@ -736,7 +744,7 @@ void draw_food_after_ghosts_move(Ghost *ghost)
         int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 8;
         drawObjectARGB32(food_start_x, food_start_y, 16, 16, freeze_ghosts_food);
     }
-    else if (map[ghost->point.row][ghost->point.col] == 7)
+    else if (map_data[level].map[ghost->point.row][ghost->point.col] == 7)
     { // reversed food
         // draw a black rectangle
         drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);
@@ -745,7 +753,7 @@ void draw_food_after_ghosts_move(Ghost *ghost)
         int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 8;
         drawObjectARGB32(food_start_x, food_start_y, 16, 16, reverse_food);
     }
-    else if (map[ghost->point.row][ghost->point.col] == 8)
+    else if (map_data[level].map[ghost->point.row][ghost->point.col] == 8)
     { // double score
         // draw a black rectangle
         drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);
@@ -754,7 +762,7 @@ void draw_food_after_ghosts_move(Ghost *ghost)
         int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 8;
         drawObjectARGB32(food_start_x, food_start_y, 16, 16, double_score_food);
     }
-    else if (map[ghost->point.row][ghost->point.col] == 9)
+    else if (map_data[level].map[ghost->point.row][ghost->point.col] == 9)
     { // invisible food
         // draw a black rectangle
         drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);
@@ -763,25 +771,7 @@ void draw_food_after_ghosts_move(Ghost *ghost)
         int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 8;
         drawObjectARGB32(food_start_x, food_start_y, 16, 16, invisible_food);
     }
-    else if (map[ghost->point.row][ghost->point.col] == 10)
-    { // shield food
-        // draw a black rectangle
-        drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);
-
-        int food_start_x = (2 * ghost->pixel_position.x + 25) / 2 - 8;
-        int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 8;
-        drawObjectARGB32(food_start_x, food_start_y, 16, 16, shield_food);
-    }
-    else if (map[ghost->point.row][ghost->point.col] == 11)
-    { // random effect food
-        // draw a black rectangle
-        drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);
-
-        int food_start_x = (2 * ghost->pixel_position.x + 25) / 2 - 8;
-        int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 8;
-        drawObjectARGB32(food_start_x, food_start_y, 16, 16, random_effect_food);
-    }
-    else if (map[ghost->point.row][ghost->point.col] == 12)
+    else if (map_data[level].map[ghost->point.row][ghost->point.col] == 10)
     { // power food
         // draw a black rectangle
         drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);

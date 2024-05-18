@@ -235,7 +235,7 @@ void process(char *input)
     {
         clearScreen();
         clearScreen();
-        if (page < 5)
+        if (page < 4)
         {
             page++;
         }

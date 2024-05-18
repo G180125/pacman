@@ -14,8 +14,6 @@ int end_game = 0;
 int level = 0;
 int cnt = 0;
 
-int map[ROWS][COLS];
-
 void display_instruction(int page) 
 {
     if (page != 0)
@@ -29,20 +27,47 @@ void display_instruction(int page)
     if (page == 0)
     {
         drawStringARGB32(253, 30, "Pacman", 0x00FFFF00);
-        drawObjectARGB32(90, 60, 369, 455, pacman_help);
+        drawObjectARGB32(90, 60, PAGE_WIDTH, PAGE_HEIGHT, pacman_help);
         drawStringARGB32(90, 250, "Press a/w/s/d buttons to go up/left/down/right.", 0x00FFFF00);
-        drawStringARGB32(165, 530, "Try to move around the maze", 0x00FFFF00);
-        drawStringARGB32(127, 550, "and eat all the food to win the game!", 0x00FFFF00);
+        drawStringARGB32(165, 540, "Try to move around the maze", 0x00FFFF00);
+        drawStringARGB32(127, 560, "and eat all the food to win the game!", 0x00FFFF00);
     }
     if (page == 1)
     {
         drawStringARGB32(253, 30, "Ghosts", 0x0000FF00);
-
+        drawObjectARGB32(90, 60, PAGE_WIDTH, PAGE_HEIGHT, ghost_help);
+        drawStringARGB32(145, 200, "Pac-Man isn't alone in the maze.", 0x0000FF00);
+        drawStringARGB32(100, 220, "Four colorful ghosts chase him relentlessly.", 0x0000FF00);
+        drawStringARGB32(135, 540, "Try to avoid them while eating food.", 0x0000FF00);
+        drawStringARGB32(80, 560, "The game will end once a ghost catches the pacman!", 0x0000FF00);
     }
     if (page == 2) 
     {
-        drawStringARGB32(240, 30, "Special items", 0x00FF0000);
-
+        drawStringARGB32(225, 30, "Special items", 0x00FF0000);
+        drawObjectARGB32(90, 60, PAGE_WIDTH, PAGE_HEIGHT, special_foods_help);
+        drawStringARGB32(190, 105, "(+)Invincible for 10s.", 0x000000FF);
+        drawStringARGB32(190, 195, "(+)Double score for 10s.", 0x000000FF);
+        drawStringARGB32(190, 285, "(+)Freeze ghosts for 10s.", 0x000000FF);
+        drawStringARGB32(190, 375, "(-)Pacman's moves are reversed.", 0x00FF0000);
+        drawStringARGB32(190, 465, "(-)Ghosts' speed is increased.", 0x00FF0000);
+    }
+    if (page == 3) 
+    {
+        drawStringARGB32(225, 30, "Special items", 0x00FF0000);
+        drawObjectARGB32(90, 60, PAGE_WIDTH, PAGE_HEIGHT, power_up_help);
+        drawStringARGB32(35, 180, "Eating this Power Pellet grants Pac-Man a temporary ability", 0x0000FF00);
+        drawStringARGB32(135, 200, "to turn the tables on his pursuers.", 0x0000FF00);
+        drawStringARGB32(145, 425, "When pacman eat the power potion,", 0x0000FF00);
+        drawStringARGB32(70, 445, "the ghost will stop chasing pacman and running away.", 0x0000FF00);
+        drawStringARGB32(70, 485, "Catch these frightened blue ghosts for extra points.", 0x0000FF00);
+    }
+    if (page == 4)
+    {
+        drawStringARGB32(240, 60, "That's it!", 0x00FFFF00);
+        drawStringARGB32(140, 100, "You can now freely explore the game", 0x00FFFF00);
+        drawStringARGB32(155, 120, "for more features and mechanism", 0x00FFFF00);
+        drawStringARGB32(90, 160, "Hopes you enjoy our game and rate us 5 stars :D", 0x00FFFF00);
+        drawObjectARGB32(90, 210, PAGE_WIDTH, PAGE_WIDTH, team_logo);
     }
 }
 
@@ -94,6 +119,11 @@ void draw_map_preview()
             { // if this is a wall
                 // draw a bule rectangal
                 drawRectARGB32(start_x, start_y, end_x, end_y, 0x000000CC, 2);
+            }
+            else if (i == map_data[level].gate.row && j == map_data[level].gate.col)
+            { // if this is a wall
+                // draw a bule rectangal
+                drawRectARGB32(start_x, start_y, end_x, end_y - 10, 0x000000CC, 2);
             }
             else if (map_data[level].map[i][j] == 5)
             { // teleport gate
@@ -157,17 +187,6 @@ void display_statistic_overall()
     drawStringARGB32(200, 546, map_data[level].mission3.description, 0x00FFFF00);
 }
 
-void get_map()
-{
-    for (int i = 0; i < ROWS; i++)
-    {
-        for (int j = 0; j < COLS; j++)
-        {
-            map[i][j] = map_data[level].map[i][j];
-        }
-    }
-}
-
 void draw_map()
 {
     // loop through the 2D map
@@ -201,6 +220,11 @@ void draw_map()
                 int food_end_y = (start_y + end_y) / 2 + 3;
                 drawRectARGB32(food_start_x, food_start_y, food_end_x, food_end_y, 0xFFFFAA88, 1);
                 total_food++;
+            }
+            else if (i == map_data[level].gate.row && j == map_data[level].gate.col)
+            { // if this is a wall
+                // draw a bule rectangal
+                drawRectARGB32(start_x, start_y, end_x, end_y - 16, 0x000000CC, 2);
             }
             else if (map_data[level].map[i][j] == 5)
             { // teleport gate
@@ -248,25 +272,7 @@ void draw_map()
                 drawObjectARGB32(food_start_x, food_start_y, 16, 16, invisible_food);
             }
             else if (map_data[level].map[i][j] == 10)
-            { // shield food
-                // draw a black rectangle
-                drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
-
-                int food_start_x = (start_x + end_x) / 2 - 8;
-                int food_start_y = (start_y + end_y) / 2 - 8;
-                drawObjectARGB32(food_start_x, food_start_y, 16, 16, shield_food);
-            }
-            else if (map_data[level].map[i][j] == 11)
-            { // random effect food
-                // draw a black rectangle
-                drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
-
-                int food_start_x = (start_x + end_x) / 2 - 8;
-                int food_start_y = (start_y + end_y) / 2 - 8;
-                drawObjectARGB32(food_start_x, food_start_y, 16, 16, random_effect_food);
-            }
-            else if (map_data[level].map[i][j] == 12)
-            { // random effect food
+            { // power_food
                 // draw a black rectangle
                 drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
 
@@ -299,7 +305,6 @@ void game_init()
 
 void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 {
-    get_map();
     // draw the map
     draw_map();
     draw_ghost(&pinky);
@@ -325,7 +330,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         set_wait_timer(1, 20);
         // break the loop if the game is end.
         if (end_game)
-        {
+        { 
             display_ending_screen();
             break;
         }
