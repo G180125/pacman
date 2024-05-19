@@ -749,7 +749,7 @@ void draw_food_after_ghosts_move(Ghost *ghost)
     { // if this is a gate
         // draw a blue small rectangal
         drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 24, 10 + ghost->point.row * 24 + 23, 0xFF000000, 1);
-        drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22 - 16, 0x000000CC, 2);
+        drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22 - 16, map_data[level].color_code, 2);
     }
     else if (map_data[level].map[ghost->point.row][ghost->point.col] == 6)
     { // freeze ghost

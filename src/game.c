@@ -119,12 +119,12 @@ void draw_map_preview()
             if (map_data[level].map[i][j] == 1)
             { // if this is a wall
                 // draw a bule rectangal
-                drawRectARGB32(start_x, start_y, end_x, end_y, 0x000000CC, 2);
+                drawRectARGB32(start_x, start_y, end_x, end_y, map_data[level].color_code, 2);
             }
             else if (i == map_data[level].gate.row && j == map_data[level].gate.col)
             { // if this is a wall
                 // draw a bule rectangal
-                drawRectARGB32(start_x, start_y, end_x, end_y - 10, 0x000000CC, 2);
+                drawRectARGB32(start_x, start_y, end_x, end_y - 10, map_data[level].color_code, 2);
             }
             else if (map_data[level].map[i][j] == 5)
             { // teleport gate
@@ -216,7 +216,7 @@ void draw_map()
             if (map_data[level].map[i][j] == 1)
             { // if this is a wall
                 // draw a bule rectangal
-                drawRectARGB32(start_x, start_y, end_x, end_y, 0x000000CC, 2);
+                drawRectARGB32(start_x, start_y, end_x, end_y, map_data[level].color_code, 2);
             }
             else if (map_data[level].map[i][j] == 2 || map_data[level].map[i][j] == 3)
             { // if this is a road
@@ -236,7 +236,7 @@ void draw_map()
             else if (i == map_data[level].gate.row && j == map_data[level].gate.col)
             { // if this is a wall
                 // draw a bule rectangal
-                drawRectARGB32(start_x, start_y, end_x, end_y - 16, 0x000000CC, 2);
+                drawRectARGB32(start_x, start_y, end_x, end_y - 16, map_data[level].color_code, 2);
             }
             else if (map_data[level].map[i][j] == 5)
             { // teleport gate

@@ -30,6 +30,7 @@ typedef struct {
     int highest_score;
     int map[ROWS][COLS];
     Point gate;
+    unsigned int color_code;
 } Map_data;
 
 extern Map_data map_data[];
