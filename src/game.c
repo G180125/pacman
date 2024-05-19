@@ -15,6 +15,7 @@ int level = 0;
 int cnt = 0;
 int map[ROWS][COLS];
 int ghost_speed = 15;
+int total_moves = 0;
 
 void display_instruction(int page)
 {
@@ -330,6 +331,7 @@ void game_init()
     end_game = 0;
     cnt = 0;
     ghost_speed = 15;
+    total_moves = 0;
 }
 
 void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
@@ -361,6 +363,11 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         // break the loop if the game is end.
         if (end_game)
         {
+            // Bonus points
+            if (total_moves < BONUS_MOVES)
+            {
+                total_points += (300 - total_moves) * FOOD_POINTS;
+            }
             display_ending_screen();
             break;
         }
@@ -385,6 +392,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             // get the input and execute
             char c = uart_getc();
             move_pacman(&pacman, &pinky, &blinky, &clyde, &inky, c);
+            total_moves++;
             if (pinky.is_move == 0)
             {
                 pinky.is_move = 1;
@@ -693,11 +701,11 @@ void display_ending_screen()
             display_ending_result(result_col, result_row);
             stage++;
         }
-        if (stage == 1 && cnt % 10 == 0 && result_row > 2)
+        if (stage == 1 && cnt % 10 == 0 && result_row > 1)
         {
             result_row -= 1;
             display_ending_result(result_col, result_row);
-            if (result_row == 2)
+            if (result_row == 1)
             {
                 stage++;
             }
@@ -729,6 +737,17 @@ void display_ending_screen()
             display_statistic(statistic, time);
             time++;
             if (time > total_ghosts_eaten)
+            {
+                time = 0;
+                statistic++;
+                wait = 200;
+            }
+        }
+        if (wait == 0 && cnt % 5 == 0 && time <= total_moves && statistic == 3)
+        {
+            display_statistic(statistic, time);
+            time++;
+            if (time > total_moves)
             {
                 time = 0;
                 statistic++;
@@ -804,16 +823,16 @@ void display_statistic(int value, int time)
     case 0: // Total foods
         if (time == 0)
         {
-            drawStringARGB32(120, 100, "Total foods eaten", 0x00FFFF00);
+            drawStringARGB32(120, 50, "Total foods eaten", 0x00FFFF00);
             if (total_food == 0 && !map_data[level].mission1.is_done)
             {
                 map_data[level].mission1.is_done = 1;
             }
         }
         char *str_total_foods_eaten = "";
-        displayNumber(400, 100, 10, str_total_foods_eaten, 0x00000000);
+        displayNumber(400, 50, 10, str_total_foods_eaten, 0x00000000);
         copyString(str_total_foods_eaten, numDisplay(time));
-        displayNumber(400, 100, 10, str_total_foods_eaten, 0x00FFFF00);
+        displayNumber(400, 50, 10, str_total_foods_eaten, 0x00FFFF00);
         break;
     case 1: // Special foods consume
         if (time == 0)
@@ -839,9 +858,16 @@ void display_statistic(int value, int time)
         copyString(str_total_ghosts_eaten, numDisplay(time));
         displayNumber(400, 200, 10, str_total_ghosts_eaten, 0x00FFFF00);
         break;
-    // case 4: // Time remaining
-    //     drawStringARGB32(240, 330 / 13.0f * row, "You Won", 0x00FFFF00);
-    //     break;
+    case 4: // Totoal moves
+        if (time == 0)
+        {
+            drawStringARGB32(120, 200, "Total moves", 0x00FFFF00);
+        }
+        char *str_total_moves = "";
+        displayNumber(400, 200, 10, str_total_moves, 0x00000000);
+        copyString(str_total_moves, numDisplay(time));
+        displayNumber(400, 200, 10, str_total_moves, 0x00FFFF00);
+        break;
     default: // Total score
         if (time == 0)
         {

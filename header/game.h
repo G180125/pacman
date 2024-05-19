@@ -1,6 +1,7 @@
 #define FOOD_POINTS 5
 #define ROWS 23
 #define COLS 22
+#define BONUS_MOVES 300
 
 #ifndef GAME_H
 #define GAME_H
