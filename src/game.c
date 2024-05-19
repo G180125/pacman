@@ -364,7 +364,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         if (end_game)
         {
             // Bonus points
-            if (total_moves < BONUS_MOVES)
+            if (total_moves < BONUS_MOVES && total_food == 0)
             {
                 total_points += (300 - total_moves) * FOOD_POINTS;
             }
@@ -763,7 +763,7 @@ void display_ending_screen()
             {
                 if (map_data[level].highest_score == total_points)
                 {
-                    drawStringARGB32(485, 295, "New!", 0x00FF0000);
+                    drawStringARGB32(485, 325, "New!", 0x00FF0000);
                 }
                 stage++;
                 time = 0;
@@ -776,6 +776,11 @@ void display_ending_screen()
             time++;
             if (time > 5)
             {
+                // Data logging
+                uart_puts("Total moves in this game: ");
+                uart_dec(total_moves);
+                uart_puts("\n");
+
                 drawStringARGB32(120, 560, "Type 1 to replay this level.", 0x0000FF00);
                 drawStringARGB32(120, 590, "Type 2 to go to level selection.", 0x0000FF00);
                 drawStringARGB32(120, 620, "Type 3 to go back to game's main menu.", 0x0000FF00);
@@ -823,50 +828,50 @@ void display_statistic(int value, int time)
     case 0: // Total foods
         if (time == 0)
         {
-            drawStringARGB32(120, 50, "Total foods eaten", 0x00FFFF00);
+            drawStringARGB32(120, 80, "Total foods eaten", 0x00FFFF00);
             if (total_food == 0 && !map_data[level].mission1.is_done)
             {
                 map_data[level].mission1.is_done = 1;
             }
         }
         char *str_total_foods_eaten = "";
-        displayNumber(400, 50, 10, str_total_foods_eaten, 0x00000000);
+        displayNumber(400, 80, 10, str_total_foods_eaten, 0x00000000);
         copyString(str_total_foods_eaten, numDisplay(time));
-        displayNumber(400, 50, 10, str_total_foods_eaten, 0x00FFFF00);
+        displayNumber(400, 80, 10, str_total_foods_eaten, 0x00FFFF00);
         break;
     case 1: // Special foods consume
         if (time == 0)
         {
-            drawStringARGB32(120, 150, "Total special foods eaten", 0x00FFFF00);
+            drawStringARGB32(120, 130, "Total special foods eaten", 0x00FFFF00);
         }
         char *str_total_special_foods_eaten = "";
-        displayNumber(400, 150, 10, str_total_special_foods_eaten, 0x00000000);
+        displayNumber(400, 130, 10, str_total_special_foods_eaten, 0x00000000);
         copyString(str_total_special_foods_eaten, numDisplay(time));
-        displayNumber(400, 150, 10, str_total_special_foods_eaten, 0x00FFFF00);
+        displayNumber(400, 130, 10, str_total_special_foods_eaten, 0x00FFFF00);
         break;
     case 2: // Ghosts eaten
         if (time == 0)
         {
-            drawStringARGB32(120, 200, "Total ghosts caught", 0x00FFFF00);
+            drawStringARGB32(120, 180, "Total ghosts caught", 0x00FFFF00);
             if (total_food == 0 && !map_data[level].mission3.is_done && total_ghosts_eaten >= map_data[level].mission3.goal)
             {
                 map_data[level].mission3.is_done = 1;
             }
         }
         char *str_total_ghosts_eaten = "";
-        displayNumber(400, 200, 10, str_total_ghosts_eaten, 0x00000000);
+        displayNumber(400, 180, 10, str_total_ghosts_eaten, 0x00000000);
         copyString(str_total_ghosts_eaten, numDisplay(time));
-        displayNumber(400, 200, 10, str_total_ghosts_eaten, 0x00FFFF00);
+        displayNumber(400, 180, 10, str_total_ghosts_eaten, 0x00FFFF00);
         break;
-    case 4: // Totoal moves
+    case 3: // Totoal moves
         if (time == 0)
         {
-            drawStringARGB32(120, 200, "Total moves", 0x00FFFF00);
+            drawStringARGB32(120, 230, "Total moves", 0x00FFFF00);
         }
         char *str_total_moves = "";
-        displayNumber(400, 200, 10, str_total_moves, 0x00000000);
+        displayNumber(400, 230, 10, str_total_moves, 0x00000000);
         copyString(str_total_moves, numDisplay(time));
-        displayNumber(400, 200, 10, str_total_moves, 0x00FFFF00);
+        displayNumber(400, 230, 10, str_total_moves, 0x00FFFF00);
         break;
     default: // Total score
         if (time == 0)
@@ -881,14 +886,14 @@ void display_statistic(int value, int time)
             }
             for (int i = 3; i < 18; i++)
             {
-                drawRectARGB32(10 + i * 25, 10 + 10 * 24, 10 + i * 25 + 24, 10 + 10 * 24 + 5, 0x00FFFF00, 1);
+                drawRectARGB32(10 + i * 25, 10 + 11 * 24, 10 + i * 25 + 24, 10 + 11 * 24 + 5, 0x00FFFF00, 1);
             }
-            drawStringARGB32(120, 295, "Total score", 0x00FFFF00);
+            drawStringARGB32(120, 325, "Total score", 0x00FFFF00);
         }
         char *str_total_points = "";
-        displayNumber(400, 295, 10, str_total_points, 0x00000000);
+        displayNumber(400, 325, 10, str_total_points, 0x00000000);
         copyString(str_total_points, numDisplay(time));
-        displayNumber(400, 295, 10, str_total_points, 0x00FFFF00);
+        displayNumber(400, 325, 10, str_total_points, 0x00FFFF00);
         break;
     }
 }
@@ -898,38 +903,38 @@ void display_rating(int value)
     switch (value)
     {
     case 0:
-        drawObjectARGB32(120, 350, 32, 32, star_icon);
-        drawStringARGB32(200, 366, "Eat all the foods", 0x00FFFF00);
+        drawObjectARGB32(120, 380, 32, 32, star_icon);
+        drawStringARGB32(200, 396, "Eat all the foods", 0x00FFFF00);
         break;
 
     case 1:
-        drawObjectARGB32(120, 400, 32, 32, star_icon);
-        drawStringARGB32(200, 416, map_data[level].mission2.description, 0x00FFFF00);
+        drawObjectARGB32(120, 430, 32, 32, star_icon);
+        drawStringARGB32(200, 446, map_data[level].mission2.description, 0x00FFFF00);
         break;
 
     case 2:
-        drawObjectARGB32(120, 450, 32, 32, star_icon);
-        drawStringARGB32(200, 466, map_data[level].mission3.description, 0x00FFFF00);
+        drawObjectARGB32(120, 480, 32, 32, star_icon);
+        drawStringARGB32(200, 496, map_data[level].mission3.description, 0x00FFFF00);
         break;
 
     case 3:
         if (total_food == 0)
         {
-            drawObjectARGB32(120, 350, 32, 32, star_fill_icon);
+            drawObjectARGB32(120, 380, 32, 32, star_fill_icon);
         }
         break;
 
     case 4:
         if (total_food == 0 && total_points >= map_data[level].mission2.goal)
         {
-            drawObjectARGB32(120, 400, 32, 32, star_fill_icon);
+            drawObjectARGB32(120, 430, 32, 32, star_fill_icon);
         }
         break;
 
     default:
         if (total_food == 0 && total_ghosts_eaten >= map_data[level].mission3.goal)
         {
-            drawObjectARGB32(120, 450, 32, 32, star_fill_icon);
+            drawObjectARGB32(120, 480, 32, 32, star_fill_icon);
         }
         break;
     }
