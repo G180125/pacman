@@ -67,6 +67,7 @@
     "game.h": "c",
     "__tree": "c",
     "map": "c",
-    "homescreen.h": "c"
+    "homescreen.h": "c",
+    "ios": "c"
   }
 }

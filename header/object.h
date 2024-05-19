@@ -44,7 +44,7 @@ typedef struct
     int reversed;
     int double_score;
     int invisible;
-    int shield;
+    int speed_up;
     int power_up;
 } Special_Foods;
 #endif

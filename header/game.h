@@ -43,7 +43,7 @@ typedef struct
     int reversed;
     int double_score;
     int invisible;
-    int shield;
+    int speed_up;
     int power_up;
 } Special_Foods;
 #endif
@@ -92,6 +92,7 @@ extern int threshold;
 extern int end_game;
 extern int level;
 extern int map[ROWS][COLS];	
+extern int ghost_speed;
 
 void draw_map();
 void draw_map_preview();

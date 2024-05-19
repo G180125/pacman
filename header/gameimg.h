@@ -51,6 +51,8 @@ extern unsigned long random_effect_food[];
 
 extern unsigned long power_food[];
 
+extern unsigned long speed_up_food[];
+
 extern unsigned long teleport_gate[];
 
 extern unsigned long reversed_food_icon[];
@@ -58,6 +60,10 @@ extern unsigned long reversed_food_icon[];
 extern unsigned long freeze_ghosts_food_icon[];
 
 extern unsigned long invisible_food_icon[];
+
+extern unsigned long double_score_food_icon[];
+
+extern unsigned long speed_up_food_icon[];
 
 extern unsigned long power_food_icon[];;
 

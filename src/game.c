@@ -14,6 +14,7 @@ int end_game = 0;
 int level = 0;
 int cnt = 0;
 int map[ROWS][COLS];
+int ghost_speed = 15;
 
 void display_instruction(int page)
 {
@@ -297,6 +298,15 @@ void draw_map()
                 int food_start_y = (start_y + end_y) / 2 - 8;
                 drawObjectARGB32(food_start_x, food_start_y, 16, 16, power_food);
             }
+            else if (map_data[level].map[i][j] == 11)
+            { // speed_up food
+                // draw a black rectangle
+                drawRectARGB32(start_x, start_y, end_x, end_y, 0xFF000000, 1);
+
+                int food_start_x = (start_x + end_x) / 2 - 8;
+                int food_start_y = (start_y + end_y) / 2 - 8;
+                drawObjectARGB32(food_start_x, food_start_y, 16, 16, speed_up_food);
+            }
             else
             { // outside maze zone
                 // drawing a black rectangle
@@ -318,6 +328,8 @@ void game_init()
     total_special_foods_eaten = 0;
     is_all_out_of_house = 0;
     end_game = 0;
+    cnt = 0;
+    ghost_speed = 15;
 }
 
 void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
@@ -382,7 +394,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         // animate the pacman
         draw_pacman(&pacman);
 
-        if (pinky.is_move && cnt % 15 == 0)
+        if (pinky.is_move && cnt % ghost_speed == 0)
         {
             // uart_dec(cnt);
             // uart_puts("\n");
@@ -516,6 +528,8 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
     static int freeze_ghosts_time = 15;
     static int invisible_time = 15;
     static int power_up_time = 10;
+    static int double_score_time = 10;
+    static int speed_up_time = 10;
 
     int x_offset = 0;
 
@@ -615,6 +629,47 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
             clearObject(10 + x_offset * 40, 572, 32, 32);
             pacman->special_foods.active--;
             pacman->special_foods.power_up = 0;
+        }
+    }
+
+    if (pacman->special_foods.double_score)
+    {
+        if (x_offset < pacman->special_foods.active)
+        {
+            // set_wait_timer(1, 10);
+            drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, double_score_food_icon);
+            // set_wait_timer(0, 10);
+            x_offset++;
+        }
+
+        clock(&double_score_time);
+        if (!double_score_time)
+        {
+            double_score_time = 10; // Reset time for next time pacman eat that item
+            clearObject(10 + x_offset * 40, 572, 32, 32);
+            pacman->special_foods.active--;
+            pacman->special_foods.double_score = 0;
+        }
+    }
+
+    if (pacman->special_foods.speed_up)
+    {
+        if (x_offset < pacman->special_foods.active)
+        {
+            // set_wait_timer(1, 10);
+            drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, speed_up_food_icon);
+            // set_wait_timer(0, 10);
+            x_offset++;
+        }
+
+        clock(&speed_up_time);
+        if (!speed_up_time)
+        {
+            speed_up_time = 10; // Reset time for next time pacman eat that item
+            ghost_speed = 15;
+            clearObject(10 + x_offset * 40, 572, 32, 32);
+            pacman->special_foods.active--;
+            pacman->special_foods.speed_up = 0;
         }
     }
 }

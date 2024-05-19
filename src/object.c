@@ -71,7 +71,7 @@ void draw_pacman(Pacman *pacman)
 {
     // Define the duration (in milliseconds) between each frame update
     // const unsigned int frame_duration_ms = 10;
-    clearObject(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height);
+    clearObject(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height + 2);
     // set_wait_timer(1, frame_duration_ms);
 
     // Update the frame
@@ -294,6 +294,13 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
         pacman->special_foods.reversed = 1;
         total_special_foods_eaten++;
     }
+    // if the pacman has eaten a double score food
+    else if (map[pacman->point.row][pacman->point.col] == 8)
+    {
+        pacman->special_foods.active++;
+        pacman->special_foods.double_score = 1;
+        total_special_foods_eaten++;
+    }
     // if the pacman has eaten a invisible food
     else if (map[pacman->point.row][pacman->point.col] == 9)
     {
@@ -302,11 +309,18 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a power_up food
-    // if the pacman has eaten a power_up food
     else if (map[pacman->point.row][pacman->point.col] == 10)
     {
         pacman->special_foods.active++;
         pacman->special_foods.power_up = 1;
+        total_special_foods_eaten++;
+    }
+    // if the pacman has eaten a speed_up food
+    else if (map[pacman->point.row][pacman->point.col] == 11)
+    {
+        pacman->special_foods.active++;
+        pacman->special_foods.speed_up = 1;
+        ghost_speed = 10;
         total_special_foods_eaten++;
     }
 
@@ -795,6 +809,15 @@ void draw_food_after_ghosts_move(Ghost *ghost)
         int food_start_x = (2 * ghost->pixel_position.x + 25) / 2 - 8;
         int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 8;
         drawObjectARGB32(food_start_x, food_start_y, 16, 16, power_food);
+    }
+    else if (map[ghost->point.row][ghost->point.col] == 11)
+    { // speed_up food
+        // draw a black rectangle
+        drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);
+
+        int food_start_x = (2 * ghost->pixel_position.x + 25) / 2 - 8;
+        int food_start_y = (2 * ghost->pixel_position.y + 24) / 2 - 8;
+        drawObjectARGB32(food_start_x, food_start_y, 16, 16, speed_up_food);
     }
     else
     {
