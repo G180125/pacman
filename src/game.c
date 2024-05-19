@@ -367,9 +367,6 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
 
         handle_special_food(&pacman, &pinky, &blinky, &clyde, &inky);
 
-        // animate the pacman
-        draw_pacman(&pacman);
-
         // if there is an input key
         if (uart_isReadByteReady() == 0)
         {
@@ -381,6 +378,9 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
                 pinky.is_move = 1;
             }
         }
+
+        // animate the pacman
+        draw_pacman(&pacman);
 
         if (pinky.is_move && cnt % 15 == 0)
         {

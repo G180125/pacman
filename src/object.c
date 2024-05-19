@@ -152,7 +152,8 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
 
         // if the under position is a wall
         // pacman cannot move down
-        if (map[pacman->point.row + 1][pacman->point.col] == 1)
+        if (map[pacman->point.row + 1][pacman->point.col] == 1 || 
+        (pacman->point.row + 1 == map_data[level].gate.row && pacman->point.col == map_data[level].gate.col))
         {
             return;
         }
