@@ -23,7 +23,7 @@ int page = 0;
 
 void move_image(char c, int flag);
 void intro();
-void process(char *input);
+void process();
 
 void main()
 {
@@ -57,7 +57,7 @@ void main()
         {
             ///////////////
             *(buffer + buffer_index) = '\0'; // endline
-            process(buffer);                 // Input processing
+            process();                       // Input processing
             ///////////////////////////
             uart_puts("\n" preText);
             for (int i = 0; i < buffer_index; i++) // Clear the the buffer
@@ -90,11 +90,17 @@ void intro()
     drawStringARGB32(150, 500, "Press 3 for Gaming", 0x00FFFF00);
 }
 
-void process(char *input)
+void process()
 {
-    if (stringcompare(buffer, "exit") == 0)
+    if ((stringcompare(buffer, "exit") == 0) ||
+        ((stringcompare(buffer, "3") == 0) && session == 1))
     {
         intro();
+        for (int i = 0; i < buffer_index; i++) // Clear the the buffer
+        {
+            buffer[i] = ' ';
+        }
+        buffer_index = 0;
         restart_flag = 0;
         session = 0;
     }
@@ -154,21 +160,29 @@ void process(char *input)
     }
 
     //------------------------------game's home screen---------------------
-    else if (stringcompare(buffer, "3") == 0 && session == 0)
+    else if ((stringcompare(buffer, "3") == 0 && session == 0) ||
+             (stringcompare(buffer, "3") == 0 && session == 2) ||
+             ((stringcompare(buffer, "3") == 0) && session == 3))
     {
         clearScreen();
         display_home_screen();
         session = 1;
-        uart_puts("\n Type exit to exit out of the game, any button to replay the game");
+        uart_puts("\n Type 1 to play game");
+        uart_puts("\n Type 2 to see instruction");
+        uart_puts("\n Type 3 to exit game");
     }
 
     //------------------------------select level---------------------
-    else if ((stringcompare(buffer, "1") == 0 && session == 1))
+    else if ((stringcompare(buffer, "1") == 0 && session == 1) ||
+             ((stringcompare(buffer, "2") == 0) && session == 3))
     {
         clearScreen();
         level = 0;
+        session = 1;
         level_preview();
-        uart_puts("\n Type exit to exit out of the game, any button to replay the game");
+        uart_puts("\n Type a/d to view level's detail");
+        uart_puts("\n Press enter to play selected level");
+        uart_puts("\n Type 3 to move back to game's home screen.");
     }
     else if ((stringcompare(buffer, "a") == 0 && session == 1))
     {
@@ -178,7 +192,9 @@ void process(char *input)
             level--;
         }
         level_preview();
-        uart_puts("\n Type exit to exit out of the game, any button to replay the game");
+        uart_puts("\n Type a/d to view level's detail");
+        uart_puts("\n Press enter to play selected level");
+        uart_puts("\n Type 3 to move back to game's home screen.");
     }
     else if ((stringcompare(buffer, "d") == 0 && session == 1))
     {
@@ -188,28 +204,36 @@ void process(char *input)
             level++;
         }
         level_preview();
-        uart_puts("\n Type exit to exit out of the game, any button to replay the game");
+        uart_puts("\n Type a/d to view level's detail");
+        uart_puts("\n Press enter to play selected level");
+        uart_puts("\n Type 3 to move back to game's home screen.");
     }
 
     //------------------------------play game---------------------
-    else if (((stringcompare(buffer, "\0") == 0) && session == 1) || restart_flag)
+    else if (((stringcompare(buffer, "\0") == 0) && session == 1) ||
+             ((stringcompare(buffer, "1") == 0) && session == 3))
     {
         if (level != 0 && !map_data[level - 1].mission1.is_done)
         {
-            uart_puts("Please finished previous map by eating all the food first");
+            uart_puts("Finished previous map by eating all the food to unlock this map");
+            uart_puts("\n Type a/d to view level's detail");
+            uart_puts("\n Type 3 to move back to game's home screen.");
         }
         else
         {
+            session = 3;
             //////////////////////////////////////
             clearScreen();
 
             uart_puts("\nGame activated\n");
+            uart_puts("\nPress w/a/s/d to move around the maze\n");
 
             game_init();
 
             game(pacman, pinky, blinky, clyde, inky);
-            restart_flag = 1;
-            uart_puts("\n Type exit to exit out of the game, any button to replay the game");
+            uart_puts("\n Type 1 to replay this level");
+            uart_puts("\n Type 2 to go to level selection");
+            uart_puts("\n Type 3 to go back to game's main menu");
         }
     }
 
@@ -220,6 +244,8 @@ void process(char *input)
         session = 2;
         page = 0;
         display_instruction(page);
+        uart_puts("\n Type a/d to move between instructions.");
+        uart_puts("\n Type 3 to move back to game's home screen.");
     }
     else if (((stringcompare(buffer, "a") == 0) && session == 2))
     {
@@ -230,6 +256,8 @@ void process(char *input)
             page--;
         }
         display_instruction(page);
+        uart_puts("\n Type a/d to move between instructions.");
+        uart_puts("\n Type 3 to move back to game's home screen.");
     }
     else if (((stringcompare(buffer, "d") == 0) && session == 2))
     {
@@ -240,6 +268,8 @@ void process(char *input)
             page++;
         }
         display_instruction(page);
+        uart_puts("\n Type a/d to move between instructions.");
+        uart_puts("\n Type 3 to move back to game's home screen.");
     }
 
     //------------------------------clear cli---------------------

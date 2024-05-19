@@ -13,9 +13,9 @@ int is_all_out_of_house = 0;
 int end_game = 0;
 int level = 0;
 int cnt = 0;
-int map[ROWS][COLS];	
+int map[ROWS][COLS];
 
-void display_instruction(int page) 
+void display_instruction(int page)
 {
     if (page != 0)
     {
@@ -42,7 +42,7 @@ void display_instruction(int page)
         drawStringARGB32(135, 540, "Try to avoid them while eating food.", 0x0000FF00);
         drawStringARGB32(80, 560, "The game will end once a ghost catches the pacman!", 0x0000FF00);
     }
-    if (page == 2) 
+    if (page == 2)
     {
         drawStringARGB32(225, 30, "Special items", 0x00FF0000);
         drawObjectARGB32(90, 60, PAGE_WIDTH, PAGE_HEIGHT, special_foods_help);
@@ -52,7 +52,7 @@ void display_instruction(int page)
         drawStringARGB32(190, 375, "(-)Pacman's moves are reversed.", 0x00FF0000);
         drawStringARGB32(190, 465, "(-)Ghosts' speed is increased.", 0x00FF0000);
     }
-    if (page == 3) 
+    if (page == 3)
     {
         drawStringARGB32(225, 30, "Special items", 0x00FF0000);
         drawObjectARGB32(90, 60, PAGE_WIDTH, PAGE_HEIGHT, power_up_help);
@@ -66,9 +66,10 @@ void display_instruction(int page)
     {
         drawStringARGB32(240, 60, "That's it!", 0x00FFFF00);
         drawStringARGB32(140, 100, "You can now freely explore the game", 0x00FFFF00);
-        drawStringARGB32(155, 120, "for more features and mechanism", 0x00FFFF00);
+        drawStringARGB32(155, 120, "for more features and mechanism.", 0x00FFFF00);
         drawStringARGB32(90, 160, "Hopes you enjoy our game and rate us 5 stars :D", 0x00FFFF00);
         drawObjectARGB32(90, 210, PAGE_WIDTH, PAGE_WIDTH, team_logo);
+        drawStringARGB32(120, 620, "Type 3 to go back to game's main menu.", 0x0000FF00);
     }
 }
 
@@ -83,13 +84,15 @@ void display_home_screen()
 void level_preview()
 {
     draw_map_preview();
-    if (level != 0 && !map_data[level-1].mission1.is_done)
+    if (level != 0 && !map_data[level - 1].mission1.is_done)
     {
         drawObjectARGB32(198, 380, 145, 200, lock);
+        drawStringARGB32(20, 600, "Finished previous map by eating all the food to unlock this map.", 0x0000FFFF);
     }
     else
     {
         display_statistic_overall();
+        drawStringARGB32(160, 600, "Press enter to play this map.", 0x0000FFFF);
     }
 
     if (level != 0)
@@ -100,6 +103,8 @@ void level_preview()
     {
         drawObjectARGB32(464, 270, 60, 110, forward_button);
     }
+
+    drawStringARGB32(125, 620, "Type 3 to go back to game's main menu.", 0x0000FF00);
 }
 
 void draw_map_preview()
@@ -188,15 +193,15 @@ void display_statistic_overall()
     drawStringARGB32(200, 546, map_data[level].mission3.description, 0x00FFFF00);
 }
 
-void get_map()	
-{	
-    for (int i = 0; i < ROWS; i++)	
-    {	
-        for (int j = 0; j < COLS; j++)	
-        {	
-            map[i][j] = map_data[level].map[i][j];	
-        }	
-    }	
+void get_map()
+{
+    for (int i = 0; i < ROWS; i++)
+    {
+        for (int j = 0; j < COLS; j++)
+        {
+            map[i][j] = map_data[level].map[i][j];
+        }
+    }
 }
 
 void draw_map()
@@ -343,7 +348,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         set_wait_timer(1, 20);
         // break the loop if the game is end.
         if (end_game)
-        { 
+        {
             display_ending_screen();
             break;
         }
@@ -412,8 +417,8 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             else
             {
                 // After scatter_duration, change to chase mode
-                if (((cnt - (map_data[level].scatter_duration * 1000 / 20)) % ((map_data[level].scatter_duration + map_data[level].scatter_duration)* 1000 / 20) == 0 && 
-                    scatter_mode == 1))
+                if (((cnt - (map_data[level].scatter_duration * 1000 / 20)) % ((map_data[level].scatter_duration + map_data[level].scatter_duration) * 1000 / 20) == 0 &&
+                     scatter_mode == 1))
                 {
                     // uart_puts("chase\n");
                     scatter_mode = 0;
@@ -682,7 +687,8 @@ void display_ending_screen()
             time++;
             if (time > total_points)
             {
-                if (map_data[level].highest_score == total_points) {
+                if (map_data[level].highest_score == total_points)
+                {
                     drawStringARGB32(485, 295, "New!", 0x00FF0000);
                 }
                 stage++;
@@ -696,6 +702,9 @@ void display_ending_screen()
             time++;
             if (time > 5)
             {
+                drawStringARGB32(120, 560, "Type 1 to replay this level.", 0x0000FF00);
+                drawStringARGB32(120, 590, "Type 2 to go to level selection.", 0x0000FF00);
+                drawStringARGB32(120, 620, "Type 3 to go back to game's main menu.", 0x0000FF00);
                 break;
             }
         }
