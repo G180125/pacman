@@ -14,4 +14,5 @@ unsigned int random_number();
 int distance_square(int x0, int y0, int x1, int y1);
 void bubbleSort(PriorityQueue arr[], int n);
 int stringcompare(char *a, char *b);
-
+char *numDisplay(int input);
+void copyString(char *t, char *s);
