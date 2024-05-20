@@ -1,25 +1,19 @@
 #include "object.h"
 
 Pacman pacman = {
-    {1, 1},
-    {36, 35},
+    {13, 10},
+    {262, 324},
     {0, 0, 0, 0, 0, 0, 0},
     {20, 20},
     0,
-    -1,
-    {pacman_frame_0,
-     pacman_frame_1,
-     pacman_frame_2,
-     pacman_frame_3,
-     pacman_frame_4,
-     pacman_frame_5,
-     pacman_frame_6}};
+    3};
 
 Ghost pinky = {
     {10, 9},
     {237, 252},
     {22, 20},
-    {-4, 2},
+    //{-4, 2},
+    {3, -1},
     {0, 0},
     0,
     0,
@@ -32,7 +26,8 @@ Ghost blinky = {
     {10, 11},
     {287, 252},
     {22, 20},
-    {-4, 20},
+    // {-4, 22},
+    {3, 21},
     {0, 0},
     0,
     0,
@@ -88,7 +83,22 @@ void draw_pacman(Pacman *pacman)
     // Delete the old frame
     // Draw the current frame
     clearObject(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height);
-    drawObjectARGB32(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height, pacman->frames[pacman->current_frame]);
+    if (pacman->current_move == 0)
+    {
+        drawObjectARGB32(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height, pacman_up_frames[pacman->current_frame]);
+    }
+    else if (pacman->current_move == 1)
+    {
+        drawObjectARGB32(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height, pacman_left_frames[pacman->current_frame]);
+    }
+    else if (pacman->current_move == 2)
+    {
+        drawObjectARGB32(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height, pacman_down_frames[pacman->current_frame]);
+    }
+    else if (pacman->current_move == 3)
+    {
+        drawObjectARGB32(pacman->pixel_position.x, pacman->pixel_position.y, pacman->size.width, pacman->size.height, pacman_right_frames[pacman->current_frame]);
+    }
 
     // set_wait_timer(0, frame_duration_ms);
 }
@@ -152,8 +162,8 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
 
         // if the under position is a wall
         // pacman cannot move down
-        if (map[pacman->point.row + 1][pacman->point.col] == 1 || 
-        (pacman->point.row + 1 == map_data[level].gate.row && pacman->point.col == map_data[level].gate.col))
+        if (map[pacman->point.row + 1][pacman->point.col] == 1 ||
+            (pacman->point.row + 1 == map_data[level].gate.row && pacman->point.col == map_data[level].gate.col))
         {
             return;
         }
@@ -333,8 +343,6 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
 
 void move_ghost(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky)
 {
-    // set_wait_timer(1, 200000);
-
     if (scatter_mode)
     {
         move_ghost_scatter(pacman, pinky, blinky, clyde, inky);
@@ -347,8 +355,6 @@ void move_ghost(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost
     {
         move_ghost_frighten(pacman, pinky, blinky, clyde, inky);
     }
-
-    // set_wait_timer(1, 200000);
 }
 
 void move_ghost_scatter(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky)
@@ -363,14 +369,14 @@ void move_ghost_scatter(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyd
         if (distance_square(blinky->point.row, blinky->point.col, clyde->point.row, clyde->point.col) > 5 && !clyde->is_move)
         {
             clyde->is_move = 1;
-            clyde->scatter_position.row = blinky->scatter_position.row;
-            clyde->scatter_position.col = blinky->scatter_position.col;
+            clyde->scatter_position.row = map_data[level].gate.row;
+            clyde->scatter_position.col = map_data[level].gate.col;
         }
         if (distance_square(clyde->point.row, clyde->point.col, inky->point.row, inky->point.col) > 5 && !inky->is_move)
         {
             inky->is_move = 1;
-            inky->scatter_position.row = blinky->scatter_position.row;
-            inky->scatter_position.col = blinky->scatter_position.col;
+            inky->scatter_position.row = map_data[level].gate.row;
+            inky->scatter_position.col = map_data[level].gate.col;
         }
         if (blinky->is_move)
         {
@@ -378,22 +384,22 @@ void move_ghost_scatter(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyd
         }
         if (clyde->is_move)
         {
-            move_ghost_execute(pacman, clyde);
-            if (distance_square(clyde->point.row, clyde->point.col, blinky->scatter_position.row, blinky->scatter_position.col) < 200)
+            if (clyde->point.row == map_data[level].gate.row && clyde->point.col == map_data[level].gate.col)
             {
                 clyde->scatter_position.row = 24;
                 clyde->scatter_position.col = 0;
             }
+            move_ghost_execute(pacman, clyde);
         }
         if (inky->is_move)
         {
-            move_ghost_execute(pacman, inky);
-            if (distance_square(inky->point.row, inky->point.col, blinky->scatter_position.row, blinky->scatter_position.col) < 200)
+            if (inky->point.row == map_data[level].gate.row && inky->point.col == map_data[level].gate.col)
             {
                 inky->scatter_position.row = 23;
                 inky->scatter_position.col = 22;
                 is_all_out_of_house = 1;
             }
+            move_ghost_execute(pacman, inky);
         }
     }
     else
@@ -576,7 +582,7 @@ void process_next_move(Ghost *ghost, PriorityQueue dis[])
         if (dis[i].direction == 2)
         {
             if (ghost->previous_move != 0 && ghost->point.row < 23 && map[ghost->point.row + 1][ghost->point.col] != 1 &&
-                (ghost->point.row + 1 != map_data[level].gate.row || ghost->point.col != map_data[level].gate.col || ghost->status != 1))
+                (ghost->point.row + 1 != map_data[level].gate.row || ghost->point.col != map_data[level].gate.col || ghost->status > 1))
             {
                 // move to the new position
                 // increasing the row
@@ -715,7 +721,7 @@ int random_move(Ghost *ghost, int direction)
     if (direction == 2)
     {
         if (ghost->previous_move != 0 && ghost->point.row < 23 && map[ghost->point.row + 1][ghost->point.col] != 1 &&
-            (ghost->point.row + 1 != map_data[level].gate.row || ghost->point.col != map_data[level].gate.col))
+            (ghost->point.row + 1 != map_data[level].gate.row || ghost->point.col != map_data[level].gate.col || ghost->status > 1))
         {
             // move to the new position
             // increasing the row

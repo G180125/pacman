@@ -213,13 +213,13 @@ void process()
     else if (((stringcompare(buffer, "\0") == 0) && session == 1) ||
              ((stringcompare(buffer, "1") == 0) && session == 3))
     {
-        if (level != 0 && !map_data[level - 1].mission1.is_done)
-        {
-            uart_puts("Finished previous map by eating all the food to unlock this map");
-            uart_puts("\n Type a/d to view level's detail");
-            uart_puts("\n Type 3 to move back to game's home screen.");
-        }
-        else
+        // if (level != 0 && !map_data[level - 1].mission1.is_done)
+        // {
+        //     uart_puts("Finished previous map by eating all the food to unlock this map");
+        //     uart_puts("\n Type a/d to view level's detail");
+        //     uart_puts("\n Type 3 to move back to game's home screen.");
+        // }
+        // else
         {
             session = 3;
             //////////////////////////////////////

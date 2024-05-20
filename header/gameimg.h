@@ -4,26 +4,45 @@
 #ifndef GAMEIMG_H
 #define GAMEIMG_H
 
-// 'pacman_frame_0', 20x20px
-extern unsigned long pacman_frame_0[];
+// 'pacman_up_frame', 20x20px
+extern unsigned long pacman_up_frame_0[];
+extern unsigned long pacman_up_frame_1[];
+extern unsigned long pacman_up_frame_2[];
+extern unsigned long pacman_up_frame_3[];
+extern unsigned long pacman_up_frame_4[];
+extern unsigned long pacman_up_frame_5[];
+extern unsigned long pacman_up_frame_6[];
+extern unsigned long *pacman_up_frames[7];
 
-// 'pacman_frame_1', 20x20px
-extern unsigned long pacman_frame_1[];
+// 'pacman_left_frame', 20x20px
+extern unsigned long pacman_left_frame_0[];
+extern unsigned long pacman_left_frame_1[];
+extern unsigned long pacman_left_frame_2[];
+extern unsigned long pacman_left_frame_3[];
+extern unsigned long pacman_left_frame_4[];
+extern unsigned long pacman_left_frame_5[];
+extern unsigned long pacman_left_frame_6[];
+extern unsigned long *pacman_left_frames[7];
 
-// 'pacman_frame_2', 20x20px
-extern unsigned long pacman_frame_2 [];
+// 'pacman_down_frame', 20x20px
+extern unsigned long pacman_down_frame_0[];
+extern unsigned long pacman_down_frame_1[];
+extern unsigned long pacman_down_frame_2[];
+extern unsigned long pacman_down_frame_3[];
+extern unsigned long pacman_down_frame_4[];
+extern unsigned long pacman_down_frame_5[];
+extern unsigned long pacman_down_frame_6[];
+extern unsigned long *pacman_down_frames[7];
 
-// 'pacman_frame_3', 20x20px
-extern unsigned long pacman_frame_3 [];
-
-// 'pacman_frame_4', 20x20px
-extern unsigned long pacman_frame_4 [];
-
-// 'pacman_frame_5', 20x20px
-extern unsigned long pacman_frame_5 [];
-
-// 'pacman_frame_6', 20x20px
-extern unsigned long pacman_frame_6 [];
+// 'pacman_right_frame', 20x20px
+extern unsigned long pacman_right_frame_0[];
+extern unsigned long pacman_right_frame_1[];
+extern unsigned long pacman_right_frame_2[];
+extern unsigned long pacman_right_frame_3[];
+extern unsigned long pacman_right_frame_4[];
+extern unsigned long pacman_right_frame_5[];
+extern unsigned long pacman_right_frame_6[];
+extern unsigned long *pacman_right_frames[7];
 
 extern unsigned long blinky_frame[];
 

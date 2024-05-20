@@ -393,7 +393,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             char c = uart_getc();
             move_pacman(&pacman, &pinky, &blinky, &clyde, &inky, c);
             total_moves++;
-            if (pinky.is_move == 0)
+            if (!is_all_out_of_house && pinky.is_move == 0)
             {
                 pinky.is_move = 1;
             }

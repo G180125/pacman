@@ -59,7 +59,6 @@ typedef struct
     Size size;
     int current_frame;
     int current_move;
-    unsigned long *frames[7];
 } Pacman;
 #endif
 
