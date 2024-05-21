@@ -293,43 +293,67 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
     // if the pacman has eaten a freeze ghosts food
     else if (map[pacman->point.row][pacman->point.col] == 6)
     {
-        pacman->special_foods.active++;
-        pacman->special_foods.freeze_ghosts = 1;
+        if (!pacman->special_foods.freeze_ghosts)
+        {
+            pacman->special_foods.active++;
+            pacman->special_foods.freeze_ghosts = 1;
+        }
+        freeze_ghosts_time += FREEZE_GHOST_TIME;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a reversed food
     else if (map[pacman->point.row][pacman->point.col] == 7)
     {
-        pacman->special_foods.active++;
-        pacman->special_foods.reversed = 1;
+        if (!pacman->special_foods.reversed)
+        {
+            pacman->special_foods.active++;
+            pacman->special_foods.reversed = 1;
+        }
+        reversed_time += REVERSED_TIME;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a double score food
     else if (map[pacman->point.row][pacman->point.col] == 8)
     {
-        pacman->special_foods.active++;
-        pacman->special_foods.double_score = 1;
+        if (!pacman->special_foods.double_score)
+        {
+            pacman->special_foods.active++;
+            pacman->special_foods.double_score = 1;
+        }
+        double_score_time += DOUBLE_SCORE_TIME;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a invisible food
     else if (map[pacman->point.row][pacman->point.col] == 9)
     {
-        pacman->special_foods.active++;
-        pacman->special_foods.invisible = 1;
+        if (!pacman->special_foods.invisible)
+        {
+            pacman->special_foods.active++;
+            pacman->special_foods.invisible = 1;
+        }
+        invisible_time += INVISIBLE_TIME;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a power_up food
     else if (map[pacman->point.row][pacman->point.col] == 10)
     {
-        pacman->special_foods.active++;
-        pacman->special_foods.power_up = 1;
+        if (!pacman->special_foods.power_up)
+        {
+            pacman->special_foods.active++;
+            pacman->special_foods.power_up = 1;
+        }
+        power_up_time += POWER_UP_TIME;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a speed_up food
     else if (map[pacman->point.row][pacman->point.col] == 11)
     {
-        pacman->special_foods.active++;
-        pacman->special_foods.speed_up = 1;
+        if (!pacman->special_foods.speed_up)
+        {
+            pacman->special_foods.active++;
+            pacman->special_foods.speed_up = 1;
+        }
+        speed_up_time += SPEED_UP_TIME;
         ghost_speed = 10;
         total_special_foods_eaten++;
     }

@@ -2,6 +2,12 @@
 #define ROWS 23
 #define COLS 22
 #define BONUS_MOVES 300
+#define REVERSED_TIME 15
+#define FREEZE_GHOST_TIME 10
+#define INVISIBLE_TIME 10
+#define POWER_UP_TIME 10
+#define DOUBLE_SCORE_TIME 10
+#define SPEED_UP_TIME 15
 
 #ifndef GAME_H
 #define GAME_H
@@ -93,6 +99,13 @@ extern int end_game;
 extern int level;
 extern int map[ROWS][COLS];	
 extern int ghost_speed;
+extern int reversed_time;
+extern int freeze_ghosts_time;
+extern int invisible_time;
+extern int power_up_time;
+extern int double_score_time;
+extern int speed_up_time;
+
 
 void draw_map();
 void draw_map_preview();

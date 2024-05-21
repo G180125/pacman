@@ -17,6 +17,20 @@ int map[ROWS][COLS];
 int ghost_speed = 15;
 int total_moves = 0;
 
+int reversed_time = 0;
+int freeze_ghosts_time = 0;
+int invisible_time = 0;
+int power_up_time = 0;
+int double_score_time = 0;
+int speed_up_time = 0;
+
+int reversed_time_track = 0;
+int freeze_ghosts_time_track = 0;
+int invisible_time_track = 0;
+int power_up_time_track = 0;
+int double_score_time_track = 0;
+int speed_up_time_track = 0;
+
 void display_instruction(int page)
 {
     if (page != 0)
@@ -532,20 +546,13 @@ void disable_frighten_mode(Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *ink
 
 void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky)
 {
-    static int reversed_time = 15;
-    static int freeze_ghosts_time = 15;
-    static int invisible_time = 15;
-    static int power_up_time = 10;
-    static int double_score_time = 10;
-    static int speed_up_time = 10;
-
     int x_offset = 0;
 
     if (!pacman->special_foods.active)
     {
         for (int i = 0; i < 5; i++)
         {
-            clearObject(10 + x_offset * 40, 572, 32, 32);
+            clearObject(10 + i * 40, 572, 32, 32);
         }
     }
 
@@ -564,10 +571,10 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
             pinky->is_move = 0;
         }
 
-        clock(&freeze_ghosts_time);
+        clock(&freeze_ghosts_time, &freeze_ghosts_time_track);
         if (!freeze_ghosts_time)
         {
-            freeze_ghosts_time = 15; // Reset time for next time pacman eat that item
+            // freeze_ghosts_time = 15; // Reset time for next time pacman eat that item
             clearObject(10 + x_offset * 40, 572, 32, 32);
             pacman->special_foods.active--;
             pacman->special_foods.freeze_ghosts = 0;
@@ -589,10 +596,10 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
             x_offset++;
         }
 
-        clock(&reversed_time);
+        clock(&reversed_time, &reversed_time_track);
         if (!reversed_time)
         {
-            reversed_time = 15; // Reset time for next time pacman eat that item
+            // reversed_time = 15; // Reset time for next time pacman eat that item
             clearObject(10 + x_offset * 40, 572, 32, 32);
             pacman->special_foods.active--;
             pacman->special_foods.reversed = 0;
@@ -609,7 +616,7 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
             x_offset++;
         }
 
-        clock(&invisible_time);
+        clock(&invisible_time, &invisible_time_track);
         if (!invisible_time)
         {
             // invisible_time = 15; // Reset time for next time pacman eat that item
@@ -629,11 +636,11 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
             x_offset++;
         }
 
-        clock(&power_up_time);
+        clock(&power_up_time, &power_up_time_track);
         if (!power_up_time)
         {
             disable_frighten_mode(pinky, blinky, clyde, inky);
-            power_up_time = 10; // Reset time for next time pacman eat that item
+            // power_up_time = 10; // Reset time for next time pacman eat that item
             clearObject(10 + x_offset * 40, 572, 32, 32);
             pacman->special_foods.active--;
             pacman->special_foods.power_up = 0;
@@ -650,10 +657,10 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
             x_offset++;
         }
 
-        clock(&double_score_time);
+        clock(&double_score_time, &double_score_time_track);
         if (!double_score_time)
         {
-            double_score_time = 10; // Reset time for next time pacman eat that item
+            // double_score_time = 10; // Reset time for next time pacman eat that item
             clearObject(10 + x_offset * 40, 572, 32, 32);
             pacman->special_foods.active--;
             pacman->special_foods.double_score = 0;
@@ -670,10 +677,10 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
             x_offset++;
         }
 
-        clock(&speed_up_time);
+        clock(&speed_up_time, &speed_up_time_track);
         if (!speed_up_time)
         {
-            speed_up_time = 10; // Reset time for next time pacman eat that item
+            // speed_up_time = 10; // Reset time for next time pacman eat that item
             ghost_speed = 15;
             clearObject(10 + x_offset * 40, 572, 32, 32);
             pacman->special_foods.active--;

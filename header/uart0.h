@@ -171,5 +171,5 @@ unsigned char getUart();
 void wait_msec(unsigned int msVal);
 void set_wait_timer(int set, unsigned int msVal);
 unsigned long get_current_time();
-void clock(int* time);
+void clock(int* time, int* last_time);
 void deleteChar();

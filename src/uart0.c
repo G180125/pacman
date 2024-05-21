@@ -234,8 +234,8 @@ unsigned long get_current_count() {
     return count;
 }
 
-void clock(int* time) {
-    static unsigned long last_time = 0; // Remember the last time clock() was called
+void clock(int* time, int* last_time) {
+    // static unsigned long last_time = 0; // Remember the last time clock() was called
 
     register unsigned long f, t, current_time;
     // Get the current counter frequency (Hz)
@@ -247,10 +247,10 @@ void clock(int* time) {
     current_time = t / (f / 1000); // Convert cycles to milliseconds
 
     // If one second has passed since the last call
-    if (current_time - last_time >= 1000) {
+    if (current_time - *last_time >= 1000) {
         (*time)--;
         // Update last_time to current_time
-        last_time = current_time;
+        *last_time = current_time;
     }
 }
 
