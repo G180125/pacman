@@ -3,7 +3,9 @@
 #include "uart0.h"
 #include "font.h"
 #include "ultility.h"
+#include "global.h"
 
+int img_redraw_flag;
 // Use RGBA32 (32 bits for each pixel)
 #define COLOR_DEPTH 32
 // Pixel Order: BGR in memory order (little endian --> RGB in byte order)
@@ -76,7 +78,7 @@ void framebf_init()
         uart_hex(mBuf[28]);
         uart_puts("\n");
         uart_puts("Frame Buffer Size (bytes): ");
-        uart_dec(mBuf[29]);
+        uart_hex(mBuf[29]);
         uart_puts("\n");
         width = mBuf[5];  // Actual physical width
         height = mBuf[6]; // Actual physical height
@@ -173,12 +175,14 @@ void drawStringARGB32(int x, int y, char *str, unsigned int attr) {
 }
 
 void drawImageARGB32(int x, int y, int starting_x_index, int starting_y_index,unsigned long image[]){
+    img_redraw_flag = 0;
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
             int index = IMAGE_WIDTH * (i + starting_y_index)  + j + starting_x_index; 
             drawPixelARGB32(x + j, y + i, image[index]);
         }
     }
+    img_redraw_flag = 1;
 }
 void clearScreen() {
     // Fill the screen with black color

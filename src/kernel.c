@@ -3,6 +3,7 @@
 #include "uart0.h"
 #include "image.h"
 #include "game.h"
+#include "global.h"
 
 #define MAX_SIZE 500
 #define preText "Group7> "
@@ -15,7 +16,7 @@ int threshold = 0;    // goal to win the game
 const int SCREEN_WIDTH = 524;
 const int SCREEN_HEIGHT = 524;
 const int OFFSET = 20;
-
+int img_redraw_flag = 1;
 int y_index = 0;
 int x_index = 0;
 int session = 0;
@@ -111,18 +112,18 @@ void process()
         uart_puts("\n");
 
         clearScreen();
+        drawImageARGB32(0, 0, x_index, y_index, image);
         case_one = 1;
         buffer_index = 0;
         buffer = " "; // reset buffer
         uart_puts("Image Viewer activated, type Exit anytime to exit out of this feature");
 
-        while (case_one == 1)
+        while (case_one)
         {
             uart_puts("\n" preText);
-            drawImageARGB32(0, 0, x_index, y_index, image);
             int flag = 1;
 
-            while (flag == 1)
+            while (flag)
             {
                 char c1 = getUart();
                 if (c1 == 10)
@@ -147,12 +148,25 @@ void process()
                 }
                 else
                 {
-                    move_image(c1, flag);
-                    if (c1 != 'w' && c1 != 'a' && c1 != 's' && c1 != 'd')
+                    if (img_redraw_flag)
                     {
-                        uart_sendc(c1); // send back to terminal
-                        *(buffer + buffer_index) = c1;
-                        buffer_index++;
+
+                        move_image(c1, flag);
+
+                        if (c1 != 'w' && c1 != 'a' && c1 != 's' && c1 != 'd')
+                        {
+                            uart_sendc(c1); // send back to terminal
+                            *(buffer + buffer_index) = c1;
+                            buffer_index++;
+                        }
+                        else
+                        {
+                            for (int i = 0; i < buffer_index; i++) // Clear the the buffer
+                            {
+                                buffer[i] = ' ';
+                            }
+                            buffer_index = 0;
+                        }
                     }
                 }
             }
