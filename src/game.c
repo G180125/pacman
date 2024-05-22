@@ -31,6 +31,10 @@ int power_up_time_track = 0;
 int double_score_time_track = 0;
 int speed_up_time_track = 0;
 
+Node *head;
+Node nodes[MAX_NODES];
+Node *freeList = NULL;
+
 void display_instruction(int page)
 {
     if (page != 0)
@@ -346,6 +350,9 @@ void game_init()
     cnt = 0;
     ghost_speed = 15;
     total_moves = 0;
+    head = NULL;
+    // Initialize the free list
+    initializeFreeList();
 }
 
 void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
@@ -353,10 +360,10 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
     get_map();
     // draw the map
     draw_map();
-    draw_ghost(&pinky);
-    draw_ghost(&blinky);
-    draw_ghost(&clyde);
-    draw_ghost(&inky);
+    draw_pinky(&pinky);
+    draw_blinky(&blinky);
+    draw_clyde(&clyde);
+    draw_inky(&inky);
     // uart_sendc(total_food); total_food is correct
     char *str_total_points = "";
     // char *str_threshold = "";
@@ -397,7 +404,6 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         is_eaten(pacman, &blinky);
         is_eaten(pacman, &clyde);
         is_eaten(pacman, &inky);
-
         handle_special_food(&pacman, &pinky, &blinky, &clyde, &inky);
 
         // if there is an input key
@@ -412,6 +418,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
                 pinky.is_move = 1;
             }
         }
+        // uart_dec(pacman.special_foods.active);
 
         // animate the pacman
         draw_pacman(&pacman);
@@ -422,10 +429,10 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             // uart_puts("\n");
             // set_wait_timer(1, 10);
             move_ghost(&pacman, &pinky, &blinky, &clyde, &inky);
-            draw_ghost(&pinky);
-            draw_ghost(&blinky);
-            draw_ghost(&clyde);
-            draw_ghost(&inky);
+            draw_pinky(&pinky);
+            draw_blinky(&blinky);
+            draw_clyde(&clyde);
+            draw_inky(&inky);
             // set_wait_timer(0, 10);
         }
 
@@ -548,144 +555,98 @@ void handle_special_food(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *cly
 {
     int x_offset = 0;
 
-    if (!pacman->special_foods.active)
+    for (int i = 0; i < 6; i++)
     {
-        for (int i = 0; i < 5; i++)
-        {
-            clearObject(10 + i * 40, 572, 32, 32);
-        }
+        clearObject(10 + i * 40, 572, 32, 32);
     }
 
-    if (pacman->special_foods.freeze_ghosts)
+    Node *current = head;
+
+    removeNodesWithZeroTime(&head);
+
+    while (current != NULL)
     {
-        if (x_offset < pacman->special_foods.active)
+        clock(&(current->icon.time), &(current->icon.time_track));
+        if (current->icon.food == 6)
         {
-            // set_wait_timer(1, 10);
             drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, freeze_ghosts_food_icon);
-            // set_wait_timer(0, 10);
-            x_offset++;
-        }
 
-        if (pinky->is_move)
-        {
-            pinky->is_move = 0;
-        }
-
-        clock(&freeze_ghosts_time, &freeze_ghosts_time_track);
-        if (!freeze_ghosts_time)
-        {
-            // freeze_ghosts_time = 15; // Reset time for next time pacman eat that item
-            clearObject(10 + x_offset * 40, 572, 32, 32);
-            pacman->special_foods.active--;
-            pacman->special_foods.freeze_ghosts = 0;
-
-            if (!pinky->is_move)
+            if (pinky->is_move)
             {
-                pinky->is_move = 1;
+                pinky->is_move = 0;
+            }
+
+            if (!current->icon.time)
+            {
+                pacman->special_foods.active--;
+                pacman->special_foods.freeze_ghosts = 0;
+
+                if (!pinky->is_move)
+                {
+                    pinky->is_move = 1;
+                }
             }
         }
-    }
 
-    if (pacman->special_foods.reversed)
-    {
-        if (x_offset < pacman->special_foods.active)
+        if (current->icon.food == 7)
         {
-            // set_wait_timer(1, 10);
             drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, reversed_food_icon);
-            // set_wait_timer(0, 10);
-            x_offset++;
+
+            if (!current->icon.time)
+            {
+                pacman->special_foods.active--;
+                pacman->special_foods.reversed = 0;
+            }
         }
 
-        clock(&reversed_time, &reversed_time_track);
-        if (!reversed_time)
+        if (current->icon.food == 8)
         {
-            // reversed_time = 15; // Reset time for next time pacman eat that item
-            clearObject(10 + x_offset * 40, 572, 32, 32);
-            pacman->special_foods.active--;
-            pacman->special_foods.reversed = 0;
-        }
-    }
-
-    if (pacman->special_foods.invisible)
-    {
-        if (x_offset < pacman->special_foods.active)
-        {
-            // set_wait_timer(1, 10);
-            drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, invisible_food_icon);
-            // set_wait_timer(0, 10);
-            x_offset++;
-        }
-
-        clock(&invisible_time, &invisible_time_track);
-        if (!invisible_time)
-        {
-            // invisible_time = 15; // Reset time for next time pacman eat that item
-            clearObject(10 + x_offset * 40, 572, 32, 32);
-            pacman->special_foods.active--;
-            pacman->special_foods.invisible = 0;
-        }
-    }
-
-    if (pacman->special_foods.power_up)
-    {
-        if (x_offset < pacman->special_foods.active)
-        {
-            // set_wait_timer(1, 10);
-            drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, power_food_icon);
-            // set_wait_timer(0, 10);
-            x_offset++;
-        }
-
-        clock(&power_up_time, &power_up_time_track);
-        if (!power_up_time)
-        {
-            disable_frighten_mode(pinky, blinky, clyde, inky);
-            // power_up_time = 10; // Reset time for next time pacman eat that item
-            clearObject(10 + x_offset * 40, 572, 32, 32);
-            pacman->special_foods.active--;
-            pacman->special_foods.power_up = 0;
-        }
-    }
-
-    if (pacman->special_foods.double_score)
-    {
-        if (x_offset < pacman->special_foods.active)
-        {
-            // set_wait_timer(1, 10);
             drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, double_score_food_icon);
-            // set_wait_timer(0, 10);
-            x_offset++;
+
+            if (!current->icon.time)
+            {
+                pacman->special_foods.active--;
+                pacman->special_foods.double_score = 0;
+            }
         }
 
-        clock(&double_score_time, &double_score_time_track);
-        if (!double_score_time)
+        if (current->icon.food == 9)
         {
-            // double_score_time = 10; // Reset time for next time pacman eat that item
-            clearObject(10 + x_offset * 40, 572, 32, 32);
-            pacman->special_foods.active--;
-            pacman->special_foods.double_score = 0;
-        }
-    }
+            drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, invisible_food_icon);
 
-    if (pacman->special_foods.speed_up)
-    {
-        if (x_offset < pacman->special_foods.active)
+            if (!current->icon.time)
+            {
+                pacman->special_foods.active--;
+                pacman->special_foods.invisible = 0;
+            }
+        }
+
+        if (current->icon.food == 10)
         {
-            // set_wait_timer(1, 10);
+            drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, power_food_icon);
+
+            if (!current->icon.time)
+            {
+                disable_frighten_mode(pinky, blinky, clyde, inky);
+                pacman->special_foods.active--;
+                pacman->special_foods.power_up = 0;
+            }
+        }
+
+        if (current->icon.food == 11)
+        {
             drawObjectARGB32(10 + x_offset * 40, 572, 32, 32, speed_up_food_icon);
-            // set_wait_timer(0, 10);
-            x_offset++;
+
+            if (!current->icon.time)
+            {
+                ghost_speed = 15;
+                pacman->special_foods.active--;
+                pacman->special_foods.speed_up = 0;
+            }
         }
 
-        clock(&speed_up_time, &speed_up_time_track);
-        if (!speed_up_time)
-        {
-            // speed_up_time = 10; // Reset time for next time pacman eat that item
-            ghost_speed = 15;
-            clearObject(10 + x_offset * 40, 572, 32, 32);
-            pacman->special_foods.active--;
-            pacman->special_foods.speed_up = 0;
-        }
+        x_offset++;
+        current = current->next;
     }
 }
 

@@ -14,6 +14,7 @@
 
 #include "object.h"
 #include "map.h"
+#include "linkedlist.h"
 
 #ifndef POINT_H
 #define POINT_H
@@ -79,8 +80,8 @@ typedef struct
     Point target_position;
     int is_move;
     int previous_move;
+    int current_frame;
     int status;
-    unsigned long *image[3];
 } Ghost;
 #endif
 
@@ -105,7 +106,7 @@ extern int invisible_time;
 extern int power_up_time;
 extern int double_score_time;
 extern int speed_up_time;
-
+extern Node *head;
 
 void draw_map();
 void draw_map_preview();

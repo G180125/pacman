@@ -12,29 +12,25 @@ Ghost pinky = {
     {10, 9},
     {237, 252},
     {22, 20},
-    //{-4, 2},
-    {3, -1},
+    {3, 3},
     {0, 0},
     0,
+    3,
     0,
     0,
-    {pinky_frame,
-     frightened_ghost_frame,
-     eaten_ghost_frame}};
+};
 
 Ghost blinky = {
     {10, 11},
     {287, 252},
     {22, 20},
-    // {-4, 22},
-    {3, 21},
+    {3, 18},
     {0, 0},
     0,
+    1,
     0,
     0,
-    {blinky_frame,
-     frightened_ghost_frame,
-     eaten_ghost_frame}};
+};
 
 Ghost clyde = {
     {11, 9},
@@ -43,11 +39,10 @@ Ghost clyde = {
     {23, 0},
     {0, 0},
     0,
+    3,
     0,
     0,
-    {clyde_frame,
-     frightened_ghost_frame,
-     eaten_ghost_frame}};
+};
 
 Ghost inky = {
     {11, 11},
@@ -56,11 +51,10 @@ Ghost inky = {
     {23, 22},
     {0, 0},
     0,
+    1,
     0,
     0,
-    {inky_frame,
-     frightened_ghost_frame,
-     eaten_ghost_frame}};
+};
 
 void draw_pacman(Pacman *pacman)
 {
@@ -103,23 +97,203 @@ void draw_pacman(Pacman *pacman)
     // set_wait_timer(0, frame_duration_ms);
 }
 
-void draw_ghost(Ghost *ghost)
+void draw_pinky(Ghost *pinky)
 {
-    if (ghost->status != 0 && ghost->status != 5)
+    // Update the frame
+    if (pinky->current_frame < 1)
     {
-        if (ghost->status == 1)
+        pinky->current_frame++;
+    }
+    else
+    { // reset the frame
+        pinky->current_frame = 0;
+    }
+
+    if (pinky->status != 0 && pinky->status != 5)
+    {
+        if (pinky->status == 1)
         {
-            drawObjectARGB32(ghost->pixel_position.x, ghost->pixel_position.y, ghost->size.width, ghost->size.height, ghost->image[1]);
+            drawObjectARGB32(pinky->pixel_position.x, pinky->pixel_position.y, pinky->size.width, pinky->size.height, frightened_frames[pinky->current_frame]);
         }
         else
         {
-            drawObjectARGB32(ghost->pixel_position.x, ghost->pixel_position.y, ghost->size.width, ghost->size.height, ghost->image[2]);
+            draw_eaten_ghost(pinky);
         }
     }
     else
     {
         // drawCircleARGB32(ghost_1_x_position + (GHOST_WIDTH / 2), ghost_1_y_position + (GHOST_HEIGHT /2), ghost_radar_radius);
-        drawObjectARGB32(ghost->pixel_position.x, ghost->pixel_position.y, ghost->size.width, ghost->size.height, ghost->image[0]);
+        if (pinky->previous_move == 0)
+        {
+            drawObjectARGB32(pinky->pixel_position.x, pinky->pixel_position.y, pinky->size.width, pinky->size.height, pinky_up_frames[pinky->current_frame]);
+        }
+        else if (pinky->previous_move == 1)
+        {
+            drawObjectARGB32(pinky->pixel_position.x, pinky->pixel_position.y, pinky->size.width, pinky->size.height, pinky_left_frames[pinky->current_frame]);
+        }
+        else if (pinky->previous_move == 2)
+        {
+            drawObjectARGB32(pinky->pixel_position.x, pinky->pixel_position.y, pinky->size.width, pinky->size.height, pinky_down_frames[pinky->current_frame]);
+        }
+        else if (pinky->previous_move == 3)
+        {
+            drawObjectARGB32(pinky->pixel_position.x, pinky->pixel_position.y, pinky->size.width, pinky->size.height, pinky_right_frames[pinky->current_frame]);
+        }
+    }
+}
+
+void draw_blinky(Ghost *blinky)
+{
+    // Update the frame
+    if (blinky->current_frame < 1)
+    {
+        blinky->current_frame++;
+    }
+    else
+    { // reset the frame
+        blinky->current_frame = 0;
+    }
+
+    if (blinky->status != 0 && blinky->status != 5)
+    {
+        if (blinky->status == 1)
+        {
+            drawObjectARGB32(blinky->pixel_position.x, blinky->pixel_position.y, blinky->size.width, blinky->size.height, frightened_frames[blinky->current_frame]);
+        }
+        else
+        {
+            draw_eaten_ghost(blinky);
+        }
+    }
+    else
+    {
+        // drawCircleARGB32(ghost_1_x_position + (GHOST_WIDTH / 2), ghost_1_y_position + (GHOST_HEIGHT /2), ghost_radar_radius);
+        if (blinky->previous_move == 0)
+        {
+            drawObjectARGB32(blinky->pixel_position.x, blinky->pixel_position.y, blinky->size.width, blinky->size.height, blinky_up_frames[blinky->current_frame]);
+        }
+        else if (blinky->previous_move == 1)
+        {
+            drawObjectARGB32(blinky->pixel_position.x, blinky->pixel_position.y, blinky->size.width, blinky->size.height, blinky_left_frames[blinky->current_frame]);
+        }
+        else if (blinky->previous_move == 2)
+        {
+            drawObjectARGB32(blinky->pixel_position.x, blinky->pixel_position.y, blinky->size.width, blinky->size.height, blinky_down_frames[blinky->current_frame]);
+        }
+        else if (blinky->previous_move == 3)
+        {
+            drawObjectARGB32(blinky->pixel_position.x, blinky->pixel_position.y, blinky->size.width, blinky->size.height, blinky_right_frames[blinky->current_frame]);
+        }
+    }
+}
+
+void draw_clyde(Ghost *clyde)
+{
+    // Update the frame
+    if (clyde->current_frame < 1)
+    {
+        clyde->current_frame++;
+    }
+    else
+    { // reset the frame
+        clyde->current_frame = 0;
+    }
+
+    if (clyde->status != 0 && clyde->status != 5)
+    {
+        if (clyde->status == 1)
+        {
+            drawObjectARGB32(clyde->pixel_position.x, clyde->pixel_position.y, clyde->size.width, clyde->size.height, frightened_frames[clyde->current_frame]);
+        }
+        else
+        {
+            draw_eaten_ghost(clyde);
+        }
+    }
+    else
+    {
+        // drawCircleARGB32(ghost_1_x_position + (GHOST_WIDTH / 2), ghost_1_y_position + (GHOST_HEIGHT /2), ghost_radar_radius);
+        if (clyde->previous_move == 0)
+        {
+            drawObjectARGB32(clyde->pixel_position.x, clyde->pixel_position.y, clyde->size.width, clyde->size.height, clyde_up_frames[clyde->current_frame]);
+        }
+        else if (clyde->previous_move == 1)
+        {
+            drawObjectARGB32(clyde->pixel_position.x, clyde->pixel_position.y, clyde->size.width, clyde->size.height, clyde_left_frames[clyde->current_frame]);
+        }
+        else if (clyde->previous_move == 2)
+        {
+            drawObjectARGB32(clyde->pixel_position.x, clyde->pixel_position.y, clyde->size.width, clyde->size.height, clyde_down_frames[clyde->current_frame]);
+        }
+        else if (clyde->previous_move == 3)
+        {
+            drawObjectARGB32(clyde->pixel_position.x, clyde->pixel_position.y, clyde->size.width, clyde->size.height, clyde_right_frames[clyde->current_frame]);
+        }
+    }
+}
+
+void draw_inky(Ghost *inky)
+{
+    // Update the frame
+    if (inky->current_frame < 1)
+    {
+        inky->current_frame++;
+    }
+    else
+    { // reset the frame
+        inky->current_frame = 0;
+    }
+
+    if (inky->status != 0 && inky->status != 5)
+    {
+        if (inky->status == 1)
+        {
+            drawObjectARGB32(inky->pixel_position.x, inky->pixel_position.y, inky->size.width, inky->size.height, frightened_frames[inky->current_frame]);
+        }
+        else
+        {
+            draw_eaten_ghost(inky);
+        }
+    }
+    else
+    {
+        // drawCircleARGB32(ghost_1_x_position + (GHOST_WIDTH / 2), ghost_1_y_position + (GHOST_HEIGHT /2), ghost_radar_radius);
+        if (inky->previous_move == 0)
+        {
+            drawObjectARGB32(inky->pixel_position.x, inky->pixel_position.y, inky->size.width, inky->size.height, inky_up_frames[inky->current_frame]);
+        }
+        else if (inky->previous_move == 1)
+        {
+            drawObjectARGB32(inky->pixel_position.x, inky->pixel_position.y, inky->size.width, inky->size.height, inky_left_frames[inky->current_frame]);
+        }
+        else if (inky->previous_move == 2)
+        {
+            drawObjectARGB32(inky->pixel_position.x, inky->pixel_position.y, inky->size.width, inky->size.height, inky_down_frames[inky->current_frame]);
+        }
+        else if (inky->previous_move == 3)
+        {
+            drawObjectARGB32(inky->pixel_position.x, inky->pixel_position.y, inky->size.width, inky->size.height, inky_right_frames[inky->current_frame]);
+        }
+    }
+}
+
+void draw_eaten_ghost(Ghost *ghost)
+{
+    if (ghost->previous_move == 0)
+    {
+        drawObjectARGB32(ghost->pixel_position.x + 6, ghost->pixel_position.y + 9, 12, 6, eaten_up_frame);
+    }
+    else if (ghost->previous_move == 1)
+    {
+        drawObjectARGB32(ghost->pixel_position.x + 6, ghost->pixel_position.y + 9, 12, 6, eaten_left_frame);
+    }
+    else if (ghost->previous_move == 2)
+    {
+        drawObjectARGB32(ghost->pixel_position.x + 6, ghost->pixel_position.y + 9, 12, 6, eaten_down_frame);
+    }
+    else if (ghost->previous_move == 3)
+    {
+        drawObjectARGB32(ghost->pixel_position.x + 6, ghost->pixel_position.y + 9, 12, 6, eaten_right_frame);
     }
 }
 
@@ -277,7 +451,7 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
         displayNumber(850, 600, 10, str_total_points, 0x000000);
         // decrease the total food
         total_food -= 1;
-        if (pacman->special_foods.active && pacman->special_foods.double_score)
+        if (pacman->special_foods.double_score)
         {
             total_points += FOOD_POINTS * 2;
         }
@@ -293,68 +467,44 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
     // if the pacman has eaten a freeze ghosts food
     else if (map[pacman->point.row][pacman->point.col] == 6)
     {
-        if (!pacman->special_foods.freeze_ghosts)
-        {
-            pacman->special_foods.active++;
-            pacman->special_foods.freeze_ghosts = 1;
-        }
-        freeze_ghosts_time += FREEZE_GHOST_TIME;
+        addNode(&head, 6, FREEZE_GHOST_TIME);
+        pacman->special_foods.freeze_ghosts = 1;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a reversed food
     else if (map[pacman->point.row][pacman->point.col] == 7)
     {
-        if (!pacman->special_foods.reversed)
-        {
-            pacman->special_foods.active++;
-            pacman->special_foods.reversed = 1;
-        }
-        reversed_time += REVERSED_TIME;
+        addNode(&head, 7, REVERSED_TIME);
+        pacman->special_foods.reversed = 1;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a double score food
     else if (map[pacman->point.row][pacman->point.col] == 8)
     {
-        if (!pacman->special_foods.double_score)
-        {
-            pacman->special_foods.active++;
-            pacman->special_foods.double_score = 1;
-        }
-        double_score_time += DOUBLE_SCORE_TIME;
+        addNode(&head, 8, DOUBLE_SCORE_TIME);
+        pacman->special_foods.double_score = 1;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a invisible food
     else if (map[pacman->point.row][pacman->point.col] == 9)
     {
-        if (!pacman->special_foods.invisible)
-        {
-            pacman->special_foods.active++;
-            pacman->special_foods.invisible = 1;
-        }
-        invisible_time += INVISIBLE_TIME;
+        addNode(&head, 9, INVISIBLE_TIME);
+        pacman->special_foods.invisible = 1;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a power_up food
     else if (map[pacman->point.row][pacman->point.col] == 10)
     {
-        if (!pacman->special_foods.power_up)
-        {
-            pacman->special_foods.active++;
-            pacman->special_foods.power_up = 1;
-        }
-        power_up_time += POWER_UP_TIME;
+        addNode(&head, 10, POWER_UP_TIME);
+        pacman->special_foods.power_up = 1;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a speed_up food
     else if (map[pacman->point.row][pacman->point.col] == 11)
     {
-        if (!pacman->special_foods.speed_up)
-        {
-            pacman->special_foods.active++;
-            pacman->special_foods.speed_up = 1;
-        }
-        speed_up_time += SPEED_UP_TIME;
+        addNode(&head, 11, SPEED_UP_TIME);
         ghost_speed = 10;
+        pacman->special_foods.speed_up = 1;
         total_special_foods_eaten++;
     }
 

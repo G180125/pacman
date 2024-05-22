@@ -73,8 +73,8 @@ typedef struct
     Point target_position;
     int is_move;
     int previous_move;
+    int current_frame;
     int status;
-    unsigned long *image[3];
 } Ghost;
 #endif
 
@@ -87,7 +87,11 @@ extern Ghost inky;
 void move_priority(Ghost *ghost, PriorityQueue (*arr)[]);
 void process_next_move(Ghost *ghost, PriorityQueue dis[]);
 void draw_pacman(Pacman *pacman);
-void draw_ghost(Ghost *ghost);
+void draw_pinky(Ghost *pinky);
+void draw_blinky(Ghost *blinky);
+void draw_clyde(Ghost *clyde);
+void draw_inky(Ghost *inky);
+void draw_eaten_ghost(Ghost *ghost);
 void ghost_turn_around(Ghost *ghost);
 void move_ghost(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghost *inky);
 void move_ghost_execute(Pacman *pacman, Ghost *ghost);
