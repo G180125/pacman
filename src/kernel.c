@@ -220,7 +220,7 @@ void main()
     irq_barrier();
     irq_enable();
     timer_init();
-    start_core3(core3_main);
+  //  start_core3(core3_main);
     /*
         // Initialize frame buffer
         framebf_init();
@@ -843,7 +843,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
     displayNumber(910, 600, 10, str_threshold, 0xFFFFFF);
     // uart_puts("\nThreshold: ");
     //  uart_puts(numDisplay(threshold));
-    start_core3(core3_main); // Kick it off on core 3
+ //   start_core3(core3_main); // Kick it off on core 3
 
     while (1)
     {
