@@ -316,12 +316,13 @@ void process(char *input)
         }
     }
     else if (stringcompare(buffer, "2") == 0){
-        
-        case_one = 1;
-        buffer_index = 0;
-        buffer = " "; // reset buffer
-        
         drawVideo();
+        wait_msec(300);
+        clearScreen();
+                       
+        uart_puts("\nThank you for viewing our video\n");
+        intro();
+
     }
 
     ///////////////////////////////////////////////////////////////
@@ -976,15 +977,15 @@ void drawVideo() {
     frame132,frame133,frame134,frame135,frame136,frame137,frame138,frame139,frame140,frame141,frame142,frame143,frame144,frame145,frame146};
 
     int num_frames = sizeof(frames) / sizeof(frames[0]);
-
+    
     // Draw each frame with a delay
     for (int i = 0; i < num_frames; i++) {
+        set_wait_timer(1, 33);
         // Call drawFrameARGB32 with the appropriate frame data and coordinates
         drawFrameARGB32(frames[i], 0, 0); // Assuming (0, 0) as the top-left corner
-
         // Delay to control the frame rate (assuming 3 frames per second)
-        wait_msec(100000/3);
-    }
+        set_wait_timer(0, 33);
+}
 }
 
 
