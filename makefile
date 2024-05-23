@@ -15,7 +15,7 @@ my_script:
 
 # Ensure the build directory exists
 $(OBJDIR):
-	mkdir $(OBJDIR)
+	mkdir -p $(OBJDIR)
 
 uart0_build: ./src/uart0.c
 	aarch64-none-elf-gcc $(GCCFLAGS) -c  $(HEADER) ./src/uart0.c -o ./build/uart.o
@@ -34,7 +34,7 @@ clean:
 	del .\build\kernel8.elf .\build\*.o *.img
 
 clean_mac:
-	rm -f .\build\kernel8.elf .\build\*.o *.img
+	rm -rf build/*.o build/kernel8.elf *.img
 
 # Run emulation with QEMU FOR MAC
 run_mac: 

@@ -1,5 +1,5 @@
 #define FRAME_WIDTH 640
-#define FRAME_HEIGHT 480
+#define FRAME_HEIGHT 320
 
 // Define the number of frames
 #define NUM_FRAMES 15
