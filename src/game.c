@@ -740,15 +740,30 @@ void display_ending_screen()
         }
         if (wait == 0 && stage == 4 && cnt % 200 == 0)
         {
-            display_rating(time);
-            time++;
-            if (time > 5)
+            if (total_food == 0)
             {
-                // Data logging
-                uart_puts("Total moves in this game: ");
-                uart_dec(total_moves);
-                uart_puts("\n");
+                display_rating(time);
+                time++;
+                if (time > 5)
+                {
+                    // Data logging
+                    uart_puts("\nTotal moves in this game: ");
+                    // char* moves = (char)(total_moves);
 
+                    char *str_total_moves = "";
+                    copyString(str_total_moves, numDisplay(total_moves));
+                    uart_puts(reverseString(str_total_moves));
+                    uart_puts("\n");
+
+                    drawStringARGB32(120, 560, "Type 1 to replay this level.", 0x0000FF00);
+                    drawStringARGB32(120, 590, "Type 2 to go to level selection.", 0x0000FF00);
+                    drawStringARGB32(120, 620, "Type 3 to go back to game's main menu.", 0x0000FF00);
+                    break;
+                }
+            }
+            else
+            {
+                drawStringARGB32(120, 400, "Eat all the food to display your rating", 0x0087CEEB);
                 drawStringARGB32(120, 560, "Type 1 to replay this level.", 0x0000FF00);
                 drawStringARGB32(120, 590, "Type 2 to go to level selection.", 0x0000FF00);
                 drawStringARGB32(120, 620, "Type 3 to go back to game's main menu.", 0x0000FF00);

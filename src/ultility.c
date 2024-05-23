@@ -191,3 +191,13 @@ void copyString(char *t, char *s)
     while (*t++ = *s++)
         ;
 }
+
+char* reverseString(char* str){
+    static char result[100]; // Use a static buffer
+    int length = string_length(str);
+    for (int i = 0; i < length; i++) {
+        result[i] = str[length - 1 - i];
+    }
+    result[length] = '\0';
+    return result;
+}
