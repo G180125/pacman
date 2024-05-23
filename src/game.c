@@ -17,20 +17,6 @@ int map[ROWS][COLS];
 int ghost_speed = 15;
 int total_moves = 0;
 
-int reversed_time = 0;
-int freeze_ghosts_time = 0;
-int invisible_time = 0;
-int power_up_time = 0;
-int double_score_time = 0;
-int speed_up_time = 0;
-
-int reversed_time_track = 0;
-int freeze_ghosts_time_track = 0;
-int invisible_time_track = 0;
-int power_up_time_track = 0;
-int double_score_time_track = 0;
-int speed_up_time_track = 0;
-
 Node *head;
 Node nodes[MAX_NODES];
 Node *freeList = NULL;
@@ -404,20 +390,6 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         is_eaten(pacman, &blinky);
         is_eaten(pacman, &clyde);
         is_eaten(pacman, &inky);
-        handle_special_food(&pacman, &pinky, &blinky, &clyde, &inky);
-
-        // if there is an input key
-        if (uart_isReadByteReady() == 0)
-        {
-            // get the input and execute
-            char c = uart_getc();
-            move_pacman(&pacman, &pinky, &blinky, &clyde, &inky, c);
-            total_moves++;
-            if (!is_all_out_of_house && pinky.is_move == 0)
-            {
-                pinky.is_move = 1;
-            }
-        }
         // uart_dec(pacman.special_foods.active);
 
         // animate the pacman
@@ -435,6 +407,17 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             draw_inky(&inky);
             // set_wait_timer(0, 10);
         }
+        if (is_caught(pacman, pinky, blinky, clyde, inky))
+        {
+            uart_puts("\nGame Over\n");
+            end_game = 1;
+            continue;
+        }
+
+        is_eaten(pacman, &pinky);
+        is_eaten(pacman, &blinky);
+        is_eaten(pacman, &clyde);
+        is_eaten(pacman, &inky);
 
         // if all the foods are eaten, dislay winning message and end the game.
         if (total_food == 0)
@@ -450,9 +433,10 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             {
                 enable_frighten_mode(&pinky, &blinky, &clyde, &inky);
             }
-            if (pacman.special_foods.invisible)
+            if (pacman.special_foods.invisible && !scatter_mode)
             {
                 scatter_mode = 1;
+                cnt = 0;
                 chase_mode = 0;
             }
             else
