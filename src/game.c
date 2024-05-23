@@ -379,6 +379,21 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             break;
         }
 
+        // if there is an input key
+        if (uart_isReadByteReady() == 0)
+        {
+            // get the input and execute
+            char c = uart_getc();
+            move_pacman(&pacman, &pinky, &blinky, &clyde, &inky, c);
+            total_moves++;
+            if (!is_all_out_of_house && pinky.is_move == 0)
+            {
+                pinky.is_move = 1;
+            }
+        }
+        // animate the pacman
+        draw_pacman(&pacman);
+
         if (is_caught(pacman, pinky, blinky, clyde, inky))
         {
             uart_puts("\nGame Over\n");
@@ -390,10 +405,6 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         is_eaten(pacman, &blinky);
         is_eaten(pacman, &clyde);
         is_eaten(pacman, &inky);
-        // uart_dec(pacman.special_foods.active);
-
-        // animate the pacman
-        draw_pacman(&pacman);
 
         if (pinky.is_move && cnt % ghost_speed == 0)
         {
@@ -407,6 +418,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             draw_inky(&inky);
             // set_wait_timer(0, 10);
         }
+
         if (is_caught(pacman, pinky, blinky, clyde, inky))
         {
             uart_puts("\nGame Over\n");

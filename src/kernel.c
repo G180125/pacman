@@ -38,7 +38,7 @@ int session = 0;
 int page = 0;
 
 void move_image(char c, int flag);
-void draw_video();
+int draw_video();
 void intro();
 void process();
 
@@ -192,8 +192,14 @@ void process()
     //------------------------------video player---------------------
     else if (stringcompare(buffer, "2") == 0 && session == 0)
     {
-        draw_video();
-        wait_msec(300);
+        buffer_index = 0;
+        buffer = " "; // reset buffer
+        uart_puts("\nType 3 to back to main menu");
+        uart_puts("\n" preText);
+        while (draw_video())
+        {
+            wait_msec(300);
+        }
 
         uart_puts("\nThank you for viewing our video\n");
         intro();
@@ -366,7 +372,7 @@ void move_image(char c, int flag)
 }
 
 // Function to draw video
-void draw_video()
+int draw_video()
 {
     clearScreen();
 
@@ -385,6 +391,38 @@ void draw_video()
         // Call drawFrameARGB32 with the appropriate frame data and coordinates
         drawFrameARGB32(frames[i], 0, 0); // Assuming (0, 0) as the top-left corner
         // Delay to control the frame rate (assuming 3 frames per second)
+        if (uart_isReadByteReady() == 0)
+        {
+            char c1 = uart_getc();
+            uart_sendc(c1); // send back to terminal
+            if (c1 == 10)
+            {
+                *(buffer + buffer_index) = '\0';     // endline
+                if (stringcompare(buffer, "3") == 0) // clean up here
+                {
+                    clearScreen();
+                    case_one = 0;
+                    return 0;
+                    uart_puts("\nThank you for viewing our image\n");
+                    intro();
+
+                    break;
+                }
+                else
+                {
+                    uart_puts("\nError: Unidentified command");
+                    uart_puts("\n" preText);
+                    buffer_index = 0;
+                    buffer = " "; // reset buffer
+                }
+            }
+            else
+            {
+                *(buffer + buffer_index) = c1;
+                buffer_index++;
+            }
+        }
         set_wait_timer(0, 33);
     }
+    return 1;
 }
