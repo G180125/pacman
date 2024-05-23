@@ -221,6 +221,23 @@ void set_wait_timer(int set, unsigned int msVal) {
 
         // Calculate expired time:
         expiredTime = t + f * msVal / 1000;
+        uart_puts("Expired Time: ");
+        uart_dec(expiredTime);
+        uart_puts("\n");
+
+        // Print current counter frequency
+    uart_puts("Current counter frequency: ");
+    unsigned long current_freq;
+    asm volatile ("mrs %0, cntfrq_el0" : "=r"(current_freq));
+    uart_dec(current_freq);
+    uart_puts("\n");
+
+    // Print current counter value
+    uart_puts("Current counter value: ");
+    unsigned long current_counter;
+    asm volatile ("mrs %0, cntpct_el0" : "=r"(current_counter));
+    uart_dec(current_counter);
+    uart_puts("\n\n");
     } 
     else { /* WAIT FOR TIMER TO EXPIRE */
         do {
