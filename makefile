@@ -7,8 +7,15 @@ CFILES = $(wildcard $(SRCDIR)/*.c)
 OFILES := $(subst $(SRCDIR),$(OBJDIR),$(CFILES:.c=.o))
 GCCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib 
 
-all: clean uart0_build kernel8.img
-mac: clean_mac uart0_build kernel8.img
+all: clean my_script uart0_build kernel8.img
+mac: clean_mac my_script uart0_build kernel8.img
+
+my_script:
+	./script/script.sh
+
+# Ensure the build directory exists
+$(OBJDIR):
+	mkdir $(OBJDIR)
 
 uart0_build: ./src/uart0.c
 	aarch64-none-elf-gcc $(GCCFLAGS) -c  $(HEADER) ./src/uart0.c -o ./build/uart.o

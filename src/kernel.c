@@ -4,6 +4,21 @@
 #include "image.h"
 #include "game.h"
 #include "global.h"
+#include "./video/frame1-10.h"
+#include "./video/frame11-20.h"
+#include "./video/frame21-30.h"
+#include "./video/frame31-40.h"
+#include "./video/frame41-50.h"
+#include "./video/frame51-60.h"
+#include "./video/frame61-70.h"
+#include "./video/frame71-80.h"
+#include "./video/frame81-90.h"
+#include "./video/frame91-100.h"
+#include "./video/frame101-110.h"
+#include "./video/frame111-120.h"
+#include "./video/frame121-130.h"
+#include "./video/frame131-140.h"
+#include "./video/frame141-146.h"
 
 #define MAX_SIZE 500
 #define preText "Group7> "
@@ -23,6 +38,7 @@ int session = 0;
 int page = 0;
 
 void move_image(char c, int flag);
+void draw_video();
 void intro();
 void process();
 
@@ -171,6 +187,16 @@ void process()
                 }
             }
         }
+    }
+
+    //------------------------------video player---------------------
+    else if (stringcompare(buffer, "2") == 0 && session == 0)
+    {
+        draw_video();
+        wait_msec(300);
+
+        uart_puts("\nThank you for viewing our video\n");
+        intro();
     }
 
     //------------------------------game's home screen---------------------
@@ -336,5 +362,29 @@ void move_image(char c, int flag)
     else
     {
         flag = 1;
+    }
+}
+
+// Function to draw video
+void draw_video()
+{
+    clearScreen();
+
+    unsigned long *frames[] = {frame1, frame2, frame3, frame4, frame5, frame6, frame7, frame8, frame9, frame10, frame11, frame12, frame13, frame14, frame15, frame16, frame17, frame18, frame19, frame20, frame21, frame22, frame23, frame24, frame25, frame26, frame27, frame28, frame29, frame30, frame31, frame32, frame33, frame34, frame35, frame36, frame37, frame38, frame39, frame40, frame41, frame42, frame43, frame44, frame45, frame46, frame47, frame48, frame49, frame50, frame51, frame52, frame53, frame54, frame55, frame56, frame57, frame58, frame59, frame60, frame61, frame62, frame63, frame64, frame65, frame66, frame67, frame68, frame69, frame70, frame71, frame72, frame73, frame74, frame75, frame76, frame77, frame78, frame79, frame80,
+                               frame81, frame82, frame83, frame84, frame85, frame86, frame87, frame88, frame89, frame90, frame91, frame92, frame93, frame94, frame95, frame96, frame97, frame98,
+                               frame99, frame100, frame101, frame102, frame103, frame104, frame105, frame106, frame107, frame108, frame109, frame110, frame111, frame112, frame113, frame114,
+                               frame115, frame116, frame117, frame118, frame119, frame120, frame121, frame122, frame123, frame124, frame125, frame126, frame127, frame128, frame129, frame130, frame131,
+                               frame132, frame133, frame134, frame135, frame136, frame137, frame138, frame139, frame140, frame141, frame142, frame143, frame144, frame145, frame146};
+
+    int num_frames = sizeof(frames) / sizeof(frames[0]);
+
+    // Draw each frame with a delay
+    for (int i = 0; i < num_frames; i++)
+    {
+        set_wait_timer(1, 33);
+        // Call drawFrameARGB32 with the appropriate frame data and coordinates
+        drawFrameARGB32(frames[i], 0, 0); // Assuming (0, 0) as the top-left corner
+        // Delay to control the frame rate (assuming 3 frames per second)
+        set_wait_timer(0, 33);
     }
 }

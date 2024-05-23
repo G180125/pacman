@@ -4,6 +4,7 @@
 #include "font.h"
 #include "ultility.h"
 #include "global.h"
+#include "framebf.h"
 
 int img_redraw_flag;
 // Use RGBA32 (32 bits for each pixel)
@@ -184,6 +185,18 @@ void drawImageARGB32(int x, int y, int starting_x_index, int starting_y_index,un
     }
     img_redraw_flag = 1;
 }
+
+//---------------Video Frame helper function------------------------------//
+void drawFrameARGB32(unsigned long frame_index[], int x, int y) {
+    // Draw the frame
+    for (int i = 0; i < FRAME_HEIGHT; ++i) {
+        for (int j = 0; j < FRAME_WIDTH; ++j) {
+            int index = FRAME_WIDTH * i + j;
+            drawPixelARGB32(x + j, y + i, frame_index[index]);
+        }
+    }
+}
+
 void clearScreen() {
     // Fill the screen with black color
     for (int y = 0; y < height; ++y) {
