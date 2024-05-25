@@ -394,6 +394,8 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         // animate the pacman
         draw_pacman(&pacman);
 
+        handle_special_food(&pacman, &pinky, &blinky, &clyde, &inky);
+
         if (is_caught(pacman, pinky, blinky, clyde, inky))
         {
             uart_puts("\nGame Over\n");
@@ -759,6 +761,9 @@ void display_ending_screen()
             }
             else
             {
+                // Data logging
+                uart_puts("\nTotal moves in this game: ");
+                // char* moves = (char)(total_moves);
                 drawStringARGB32(120, 400, "Eat all the food to display your rating", 0x0087CEEB);
                 drawStringARGB32(120, 560, "Type 1 to replay this level.", 0x0000FF00);
                 drawStringARGB32(120, 590, "Type 2 to go to level selection.", 0x0000FF00);
