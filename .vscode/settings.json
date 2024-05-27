@@ -68,6 +68,8 @@
     "__tree": "c",
     "map": "c",
     "homescreen.h": "c",
-    "ios": "c"
+    "ios": "c",
+    "kernel.h": "c",
+    "timer_irq.h": "c"
   }
 }

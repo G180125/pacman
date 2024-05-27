@@ -43,7 +43,7 @@ void intro();
 void process();
 
 void main()
-{
+{ 
     // set up serial console
     uart_init();
     // say hello
@@ -160,6 +160,7 @@ void process()
                     else
                     {
                         uart_puts("\nError: Unidentified command");
+                        uart_puts("\n" preText);
                     }
                 }
                 else

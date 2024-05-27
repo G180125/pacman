@@ -68,6 +68,7 @@ int mbox_call(unsigned int buffer_addr, unsigned char channel)
     mailbox_send(msg, channel);
     /* now wait for the response */
     /* is it a response to our message (same address)? */
+    uart_puts("\nBefore message: ");
     if (msg == mailbox_read(channel))
     {
         /* is it a valid successful response (Response Code) ? */
@@ -75,5 +76,6 @@ int mbox_call(unsigned int buffer_addr, unsigned char channel)
             uart_puts("Got successful response \n");
         return (mBuf[1] == MBOX_RESPONSE);
     }
+    uart_puts("\nAfter message: ");
     return 0;
 }

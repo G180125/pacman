@@ -1,5 +1,4 @@
 #include "game.h"
-// #include "homescreen.h"
 
 // GAME INFO
 int scatter_mode = 1;
@@ -16,6 +15,8 @@ int cnt = 0;
 int map[ROWS][COLS];
 int ghost_speed = 15;
 int total_moves = 0;
+int are_ghosts_moving = 0;
+unsigned long _regs[38];
 
 Node *head;
 Node nodes[MAX_NODES];
@@ -358,12 +359,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
     // uart_puts(str_total_points);
     drawStringARGB32(750, 600, "Scoreboard: ", 0xFFFFFF);
     displayNumber(850, 600, 10, str_total_points, 0xFFFFFF);
-    // uart_puts("Total Food with str_total_food: ");
-    // uart_puts(str_total_food);
-    // drawCharARGB32(900, 600, '/', 0xFFFFFF);
-    // displayNumber(910, 600, 10, str_threshold, 0xFFFFFF);
-    // uart_puts("\nThreshold: ");
-    //  uart_puts(numDisplay(threshold));
+
     while (1)
     {
         set_wait_timer(1, 20);
@@ -386,6 +382,7 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             char c = uart_getc();
             move_pacman(&pacman, &pinky, &blinky, &clyde, &inky, c);
             total_moves++;
+            uart_puts("\nPacman moves");
             if (!is_all_out_of_house && pinky.is_move == 0)
             {
                 pinky.is_move = 1;
@@ -408,17 +405,14 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
         is_eaten(pacman, &clyde);
         is_eaten(pacman, &inky);
 
-        if (pinky.is_move && cnt % ghost_speed == 0)
+        if (pinky.is_move && are_ghosts_moving)
         {
-            // uart_dec(cnt);
-            // uart_puts("\n");
-            // set_wait_timer(1, 10);
             move_ghost(&pacman, &pinky, &blinky, &clyde, &inky);
             draw_pinky(&pinky);
             draw_blinky(&blinky);
             draw_clyde(&clyde);
             draw_inky(&inky);
-            // set_wait_timer(0, 10);
+            are_ghosts_moving = 0;
         }
 
         if (is_caught(pacman, pinky, blinky, clyde, inky))
@@ -472,9 +466,15 @@ void game(Pacman pacman, Ghost pinky, Ghost blinky, Ghost clyde, Ghost inky)
             }
         }
         set_wait_timer(0, 20);
-        if (pinky.is_move)
+        if (total_moves != 0)
         {
             cnt++;
+            uart_puts("\nCouting");
+            if (!(GET32(PIT_STATUS) & (1 << PIT_MASKBIT)))
+            {
+                uart_puts("\nStart timer irq");
+                start_timer_irq();
+            }
         }
     }
 }

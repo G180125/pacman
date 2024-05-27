@@ -21,7 +21,7 @@ uart0_build: ./src/uart0.c
 	aarch64-none-elf-gcc $(GCCFLAGS) -c  $(HEADER) ./src/uart0.c -o ./build/uart.o
 
 ./build/boot.o: ./src/boot.S
-	aarch64-none-elf-gcc $(GCCFLAGS) -c ./src/boot.S -o ./build/boot.o
+	aarch64-none-elf-gcc $(GCCFLAGS) -c  $(HEADER) ./src/boot.S -o ./build/boot.o
 
 ./build/%.o: ./src/%.c
 	aarch64-none-elf-gcc $(GCCFLAGS) -c $(HEADER) $< -o $@

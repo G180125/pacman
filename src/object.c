@@ -504,6 +504,7 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
     {
         addNode(&head, 11, SPEED_UP_TIME);
         ghost_speed = 10;
+        start_timer_irq();
         pacman->special_foods.speed_up = 1;
         total_special_foods_eaten++;
     }

@@ -15,6 +15,7 @@
 #include "object.h"
 #include "map.h"
 #include "linkedlist.h"
+#include "timer_irq.h"
 
 #ifndef POINT_H
 #define POINT_H
@@ -107,6 +108,7 @@ extern int power_up_time;
 extern int double_score_time;
 extern int speed_up_time;
 extern Node *head;
+extern int are_ghosts_moving;
 
 void draw_map();
 void draw_map_preview();
