@@ -7,7 +7,6 @@
 #include "uart0.h"
 #include "game.h"
 #include "map.h"
-#include "timer_irq.h"
 
 #ifndef POINT_H
 #define POINT_H
