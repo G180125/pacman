@@ -5,23 +5,16 @@ OBJDIR = build
 HEADER := -I ./header
 CFILES = $(wildcard $(SRCDIR)/*.c)
 OFILES := $(subst $(SRCDIR),$(OBJDIR),$(CFILES:.c=.o))
-GCCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib 
+GCCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib
 
-all: clean my_script uart0_build kernel8.img
-mac: clean_mac my_script uart0_build kernel8.img
-
-my_script:
-	./script/script.sh
-
-# Ensure the build directory exists
-$(OBJDIR):
-	mkdir -p $(OBJDIR)
+all: clean uart0_build kernel8.img
+mac: clean_mac uart0_build kernel8.img
 
 uart0_build: ./src/uart0.c
 	aarch64-none-elf-gcc $(GCCFLAGS) -c  $(HEADER) ./src/uart0.c -o ./build/uart.o
 
 ./build/boot.o: ./src/boot.S
-	aarch64-none-elf-gcc $(GCCFLAGS) -c  $(HEADER) ./src/boot.S -o ./build/boot.o
+	aarch64-none-elf-gcc $(GCCFLAGS) -c ./src/boot.S -o ./build/boot.o
 
 ./build/%.o: ./src/%.c
 	aarch64-none-elf-gcc $(GCCFLAGS) -c $(HEADER) $< -o $@
