@@ -170,8 +170,6 @@ char* numDisplay(int input)
             i++;
         }
         str[i] = '\0';
-        // uart_puts("Return String: ");// return string works
-        //uart_puts("                         "); //
     }
     return str;
 }

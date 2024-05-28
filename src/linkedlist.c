@@ -10,34 +10,36 @@ void initializeFreeList()
     freeList = &nodes[0];
 }
 
-Node* allocateNode()
+Node *allocateNode()
 {
     if (freeList == NULL)
     {
         return NULL;
     }
-    Node* newNode = freeList;
+    Node *newNode = freeList;
     freeList = freeList->next;
     newNode->next = NULL;
     return newNode;
 }
 
-void freeNode(Node* node)
+void freeNode(Node *node)
 {
     node->next = freeList;
     freeList = node;
 }
 
-void addNode(Node** head, int food, int time)
+void addNode(Node **head, int food, int time, int game_time)
 {
-    Node* newNode = allocateNode();
+    // char *str_total_moves = "";
+    //     copyString(str_total_moves, numDisplay(game_time));
+    //     uart_puts(reverseString(str_total_moves));
+    Node *newNode = allocateNode();
     if (newNode == NULL)
     {
         return;
     }
     newNode->icon.food = food;
-    newNode->icon.time = time;
-    newNode->icon.time_track = 0;
+    newNode->icon.time = time + game_time;
     newNode->next = NULL;
     if (*head == NULL)
     {
@@ -45,7 +47,7 @@ void addNode(Node** head, int food, int time)
     }
     else
     {
-        Node* temp = *head;
+        Node *temp = *head;
         while (temp != NULL && temp->next != NULL)
         {
             if (temp->icon.food == food)
@@ -56,18 +58,19 @@ void addNode(Node** head, int food, int time)
             }
             temp = temp->next;
         }
+        // If not exist
         temp->next = newNode;
     }
 }
 
-void removeNodesWithZeroTime(Node** head)
+void removeNodesWithZeroTime(Node **head, int game_time)
 {
-    Node* temp = *head;
-    Node* prev = NULL;
+    Node *temp = *head;
+    Node *prev = NULL;
 
     while (temp != NULL)
     {
-        if (temp->icon.time == 0)
+        if (temp->icon.time <= game_time)
         {
             if (prev == NULL)
             {

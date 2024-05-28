@@ -3,22 +3,22 @@
 #include "uart0.h"
 #include "image.h"
 #include "game.h"
-#include "global.h"
-#include "./video/frame1-10.h"
-#include "./video/frame11-20.h"
-#include "./video/frame21-30.h"
-#include "./video/frame31-40.h"
-#include "./video/frame41-50.h"
-#include "./video/frame51-60.h"
-#include "./video/frame61-70.h"
-#include "./video/frame71-80.h"
-#include "./video/frame81-90.h"
-#include "./video/frame91-100.h"
-#include "./video/frame101-110.h"
-#include "./video/frame111-120.h"
-#include "./video/frame121-130.h"
-#include "./video/frame131-140.h"
-#include "./video/frame141-146.h"
+#include "timer_and_interrupt.h"
+// #include "frame1-10.h"
+// #include "./video/frame11-20.h"
+// #include "./video/frame21-30.h"
+// #include "./video/frame31-40.h"
+// #include "./video/frame41-50.h"
+// #include "./video/frame51-60.h"
+// #include "./video/frame61-70.h"
+// #include "./video/frame71-80.h"
+// #include "./video/frame81-90.h"
+// #include "./video/frame91-100.h"
+// #include "./video/frame101-110.h"
+// #include "./video/frame111-120.h"
+// #include "./video/frame121-130.h"
+// #include "./video/frame131-140.h"
+// #include "./video/frame141-146.h"
 
 #define MAX_SIZE 500
 #define preText "Group7> "
@@ -27,25 +27,33 @@ int buffer_index = 0; // index for buffer string
 int case_one = 0;     // flag for case 1 (image viewer)
 int restart_flag = 0; // restart flag for game
 int threshold = 0;    // goal to win the game
-
+unsigned long _regs[38];
 const int SCREEN_WIDTH = 524;
 const int SCREEN_HEIGHT = 524;
 const int OFFSET = 20;
-int img_redraw_flag = 1;
+
 int y_index = 0;
 int x_index = 0;
 int session = 0;
 int page = 0;
+volatile int is_refresh;
+volatile int system_time;
 
 void move_image(char c, int flag);
-int draw_video();
 void intro();
 void process();
+int draw_video();
 
 void main()
-{ 
-    // set up serial console
+{
+    is_refresh = 0;
+    system_time = 0;
+
     uart_init();
+
+    enable_tmr_irq();
+
+    // set up serial console
     // say hello
     uart_puts("\n\nWELCOME TO GROUP 7 BARE OS, CHECK THE MONITOR FOR INSTRUCTION\n");
     // Initialize frame buffer
@@ -113,10 +121,7 @@ void process()
         ((stringcompare(buffer, "3") == 0) && session == 1))
     {
         intro();
-        for (int i = 0; i < buffer_index; i++) // Clear the the buffer
-        {
-            buffer[i] = ' ';
-        }
+        buffer = " ";
         buffer_index = 0;
         restart_flag = 0;
         session = 0;
@@ -128,24 +133,24 @@ void process()
         uart_puts("\n");
 
         clearScreen();
-        drawImageARGB32(0, 0, x_index, y_index, image);
         case_one = 1;
         buffer_index = 0;
         buffer = " "; // reset buffer
-        uart_puts("Image Viewer activated, type Exit anytime to exit out of this feature");
+        uart_puts("Image Viewer activated, type 3 anytime to exit out of this feature");
 
-        while (case_one)
+        while (case_one == 1)
         {
             uart_puts("\n" preText);
+            drawImageARGB32(0, 0, x_index, y_index, image);
             int flag = 1;
 
-            while (flag)
+            while (flag == 1)
             {
                 char c1 = getUart();
                 if (c1 == 10)
                 {
-                    *(buffer + buffer_index) = '\0';        // endline
-                    if (stringcompare(buffer, "exit") == 0) // clean up here
+                    *(buffer + buffer_index) = '\0';     // endline
+                    if (stringcompare(buffer, "3") == 0) // clean up here
                     {
 
                         clearScreen();
@@ -161,29 +166,23 @@ void process()
                     {
                         uart_puts("\nError: Unidentified command");
                         uart_puts("\n" preText);
+                        buffer_index = 0;
+                        buffer = " "; // reset buffer
                     }
                 }
                 else
                 {
-                    if (img_redraw_flag)
+                    move_image(c1, flag);
+                    if (c1 != 'w' && c1 != 'a' && c1 != 's' && c1 != 'd')
                     {
-
-                        move_image(c1, flag);
-
-                        if (c1 != 'w' && c1 != 'a' && c1 != 's' && c1 != 'd')
-                        {
-                            uart_sendc(c1); // send back to terminal
-                            *(buffer + buffer_index) = c1;
-                            buffer_index++;
-                        }
-                        else
-                        {
-                            for (int i = 0; i < buffer_index; i++) // Clear the the buffer
-                            {
-                                buffer[i] = ' ';
-                            }
-                            buffer_index = 0;
-                        }
+                        uart_sendc(c1); // send back to terminal
+                        *(buffer + buffer_index) = c1;
+                        buffer_index++;
+                    }
+                    else
+                    {
+                        buffer_index = 0;
+                        buffer = " "; // reset buffer
                     }
                 }
             }
@@ -191,20 +190,20 @@ void process()
     }
 
     //------------------------------video player---------------------
-    else if (stringcompare(buffer, "2") == 0 && session == 0)
-    {
-        buffer_index = 0;
-        buffer = " "; // reset buffer
-        uart_puts("\nType 3 to back to main menu");
-        uart_puts("\n" preText);
-        while (draw_video())
-        {
-            wait_msec(300);
-        }
+    // else if (stringcompare(buffer, "2") == 0 && session == 0)
+    // {
+    //     buffer_index = 0;
+    //     buffer = " "; // reset buffer
+    //     uart_puts("\nType 3 to back to main menu");
+    //     uart_puts("\n" preText);
+    //     while (draw_video())
+    //     {
+    //         wait_msec(300);
+    //     }
 
-        uart_puts("\nThank you for viewing our video\n");
-        intro();
-    }
+    //     uart_puts("\nThank you for viewing our video\n");
+    //     intro();
+    // }
 
     //------------------------------game's home screen---------------------
     else if (stringcompare(buffer, "3") == 0)
@@ -373,57 +372,56 @@ void move_image(char c, int flag)
 }
 
 // Function to draw video
-int draw_video()
-{
-    clearScreen();
+// int draw_video()
+// {
+//     clearScreen();
 
-    unsigned long *frames[] = {frame1, frame2, frame3, frame4, frame5, frame6, frame7, frame8, frame9, frame10, frame11, frame12, frame13, frame14, frame15, frame16, frame17, frame18, frame19, frame20, frame21, frame22, frame23, frame24, frame25, frame26, frame27, frame28, frame29, frame30, frame31, frame32, frame33, frame34, frame35, frame36, frame37, frame38, frame39, frame40, frame41, frame42, frame43, frame44, frame45, frame46, frame47, frame48, frame49, frame50, frame51, frame52, frame53, frame54, frame55, frame56, frame57, frame58, frame59, frame60, frame61, frame62, frame63, frame64, frame65, frame66, frame67, frame68, frame69, frame70, frame71, frame72, frame73, frame74, frame75, frame76, frame77, frame78, frame79, frame80,
-                               frame81, frame82, frame83, frame84, frame85, frame86, frame87, frame88, frame89, frame90, frame91, frame92, frame93, frame94, frame95, frame96, frame97, frame98,
-                               frame99, frame100, frame101, frame102, frame103, frame104, frame105, frame106, frame107, frame108, frame109, frame110, frame111, frame112, frame113, frame114,
-                               frame115, frame116, frame117, frame118, frame119, frame120, frame121, frame122, frame123, frame124, frame125, frame126, frame127, frame128, frame129, frame130, frame131,
-                               frame132, frame133, frame134, frame135, frame136, frame137, frame138, frame139, frame140, frame141, frame142, frame143, frame144, frame145, frame146};
+    // unsigned long *frames[] = {frame1, frame2, frame3, frame4, frame5, frame6, frame7, frame8, frame9, frame10, frame11, frame12, frame13, frame14, frame15, frame16, frame17, frame18, frame19, frame20, frame21, frame22, frame23, frame24, frame25, frame26, frame27, frame28, frame29, frame30, frame31, frame32, frame33, frame34, frame35, frame36, frame37, frame38, frame39, frame40, frame41, frame42, frame43, frame44, frame45, frame46, frame47, frame48, frame49, frame50, frame51, frame52, frame53, frame54, frame55, frame56, frame57, frame58, frame59, frame60, frame61, frame62, frame63, frame64, frame65, frame66, frame67, frame68, frame69, frame70, frame71, frame72, frame73, frame74, frame75, frame76, frame77, frame78, frame79, frame80,
+    //                            frame81, frame82, frame83, frame84, frame85, frame86, frame87, frame88, frame89, frame90, frame91, frame92, frame93, frame94, frame95, frame96, frame97, frame98,
+    //                            frame99, frame100, frame101, frame102, frame103, frame104, frame105, frame106, frame107, frame108, frame109, frame110, frame111, frame112, frame113, frame114,
+    //                            frame115, frame116, frame117, frame118, frame119, frame120, frame121, frame122, frame123, frame124, frame125, frame126, frame127, frame128, frame129, frame130, frame131,
+    //                            frame132, frame133, frame134, frame135, frame136, frame137, frame138, frame139, frame140, frame141, frame142, frame143, frame144, frame145, frame146};
 
-    int num_frames = sizeof(frames) / sizeof(frames[0]);
+    // int num_frames = sizeof(frames) / sizeof(frames[0]);
 
-    // Draw each frame with a delay
-    for (int i = 0; i < num_frames; i++)
-    {
-        set_wait_timer(1, 33);
-        // Call drawFrameARGB32 with the appropriate frame data and coordinates
-        drawFrameARGB32(frames[i], 0, 0); // Assuming (0, 0) as the top-left corner
-        // Delay to control the frame rate (assuming 3 frames per second)
-        if (uart_isReadByteReady() == 0)
-        {
-            char c1 = uart_getc();
-            uart_sendc(c1); // send back to terminal
-            if (c1 == 10)
-            {
-                *(buffer + buffer_index) = '\0';     // endline
-                if (stringcompare(buffer, "3") == 0) // clean up here
-                {
-                    clearScreen();
-                    case_one = 0;
-                    return 0;
-                    uart_puts("\nThank you for viewing our image\n");
-                    intro();
-
-                    break;
-                }
-                else
-                {
-                    uart_puts("\nError: Unidentified command");
-                    uart_puts("\n" preText);
-                    buffer_index = 0;
-                    buffer = " "; // reset buffer
-                }
-            }
-            else
-            {
-                *(buffer + buffer_index) = c1;
-                buffer_index++;
-            }
-        }
-        set_wait_timer(0, 33);
-    }
-    return 1;
-}
+    // // Draw each frame with a delay
+    // for (int i = 0; i < num_frames; i++)
+    // {
+    //     if (is_refresh)
+    //     {
+    //         // Call drawFrameARGB32 with the appropriate frame data and coordinates
+    //         drawFrameARGB32(frames[i], 0, 0); // Assuming (0, 0) as the top-left corner
+    //         // Delay to control the frame rate (assuming 3 frames per second)
+            // if (uart_isReadByteReady() == 0)
+            // {
+            //     char c1 = uart_getc();
+            //     uart_sendc(c1); // send back to terminal
+            //     if (c1 == 10)
+            //     {
+            //         *(buffer + buffer_index) = '\0';     // endline
+            //         if (stringcompare(buffer, "3") == 0) // clean up here
+            //         {
+            //             clearScreen();
+            //             case_one = 0;
+            //             return 0;
+            //             // break;
+            //         }
+            //         else
+            //         {
+            //             uart_puts("\nError: Unidentified command");
+            //             uart_puts("\n" preText);
+            //             buffer_index = 0;
+            //             buffer = " "; // reset buffer
+            //         }
+            //     }
+            //     else
+            //     {
+            //         *(buffer + buffer_index) = c1;
+            //         buffer_index++;
+            //     }
+            // }
+            // is_refresh = 0;
+    //     }
+    // }
+    // return 1;
+// }

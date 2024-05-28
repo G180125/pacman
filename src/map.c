@@ -7,12 +7,12 @@
 // 3: Special Tiles
 // 4: Pacman
 // 5: Teleport Gate
-// 6: Freeze Ghosts Food (Freeze the ghosts for 15 seconds)
-// 7: Reverse Food (Make the pacman moved in the opposite direction than the user input for 15 seconds)
-// 8: Double-Score Food (All the foods eaten will score double for 30 seconds)
-// 9: Invisible Food (The ghost can not target the pacman for 15 seconds) //ghost stage 1 only
-// 10: Shield Food (The ghost can not get close to the pacman for 30 seconds)
-// 11: Random Effect Food (Trigger a random effect of the above food)
+// 6: Freeze Ghosts Food (Freeze the ghosts)
+// 7: Reverse Food (Make the pacman moved in the opposite direction than the user input)
+// 8: Double-Score Food (All the foods eaten will score double )
+// 9: Invisible Food (The ghost can not target the pacman) //ghost stage 1 only
+// 10: Power Food (The pacman can eat the food)
+// 11: speed up food (faster the ghost)
 
 Map_data map_data[] = {
     // Map 0
@@ -41,8 +41,8 @@ Map_data map_data[] = {
             {1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1},
             {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
             {1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1},
-            {1, 10, 2, 1, 1, 2, 2, 2, 2, 3, 2, 3, 2, 2, 2, 2, 1, 1, 2, 10, 1},
-            {1, 1, 2, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 2, 1, 1},
+            {1, 10, 2, 2, 1, 2, 2, 2, 2, 3, 2, 3, 2, 2, 2, 2, 1, 2, 2, 10, 1},
+            {1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1},
             {1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1},
             {1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1},
             {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},

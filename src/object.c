@@ -448,7 +448,7 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
         // uart_dec(total_food);
         // uart_puts("\n");
         char *str_total_points = "";
-        displayNumber(850, 600, 10, str_total_points, 0x000000);
+        drawRectARGB32(320, 620, 370, 630, 0x000000, 1);
         // decrease the total food
         total_food -= 1;
         if (pacman->special_foods.double_score)
@@ -461,56 +461,60 @@ void move_pacman(Pacman *pacman, Ghost *pinky, Ghost *blinky, Ghost *clyde, Ghos
         }
 
         copyString(str_total_points, numDisplay(total_points));
-
-        displayNumber(850, 600, 10, str_total_points, 0xFFFFFF);
+         //displayNumber(200, 620, 10, str_total_points, 0x000000);
+        displayNumber(320, 620, 10, str_total_points, 0xFFFFFF);
     }
     // if the pacman has eaten a freeze ghosts food
     else if (map[pacman->point.row][pacman->point.col] == 6)
     {
-        addNode(&head, 6, FREEZE_GHOST_TIME);
+        addNode(&head, 6, FREEZE_GHOST_TIME, game_time);
         pacman->special_foods.freeze_ghosts = 1;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a reversed food
     else if (map[pacman->point.row][pacman->point.col] == 7)
     {
-        addNode(&head, 7, REVERSED_TIME);
+        addNode(&head, 7, REVERSED_TIME, game_time);
         pacman->special_foods.reversed = 1;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a double score food
     else if (map[pacman->point.row][pacman->point.col] == 8)
     {
-        addNode(&head, 8, DOUBLE_SCORE_TIME);
+        addNode(&head, 8, DOUBLE_SCORE_TIME, game_time);
         pacman->special_foods.double_score = 1;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a invisible food
     else if (map[pacman->point.row][pacman->point.col] == 9)
     {
-        addNode(&head, 9, INVISIBLE_TIME);
+        addNode(&head, 9, INVISIBLE_TIME, game_time);
         pacman->special_foods.invisible = 1;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a power_up food
     else if (map[pacman->point.row][pacman->point.col] == 10)
     {
-        addNode(&head, 10, POWER_UP_TIME);
+        addNode(&head, 10, POWER_UP_TIME, game_time);
         pacman->special_foods.power_up = 1;
         total_special_foods_eaten++;
     }
     // if the pacman has eaten a speed_up food
     else if (map[pacman->point.row][pacman->point.col] == 11)
     {
-        addNode(&head, 11, SPEED_UP_TIME);
+        addNode(&head, 11, SPEED_UP_TIME, game_time);
         ghost_speed = 10;
-        start_timer_irq();
         pacman->special_foods.speed_up = 1;
         total_special_foods_eaten++;
     }
 
     // mark the new position of pacman on the map
     map[pacman->point.row][pacman->point.col] = 4;
+    uart_puts("\n[");
+    uart_puts(reverseString(numDisplay(pacman->point.row)));
+    uart_puts(", ");
+    uart_puts(reverseString(numDisplay(pacman->point.col)));
+    uart_puts("]\n.....");
 
     // clearing the old pacman in the screen
     clearObject(pacman_old_x_position, pacman_old_y_position, pacman->size.width, pacman->size.height);
@@ -947,7 +951,7 @@ void draw_food_after_ghosts_move(Ghost *ghost)
         drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 24, 10 + ghost->point.row * 24 + 23, 0xFF000000, 1);
         drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22 - 16, map_data[level].color_code, 2);
     }
-    else if (map_data[level].map[ghost->point.row][ghost->point.col] == 6)
+    else if (map[ghost->point.row][ghost->point.col] == 6)
     { // freeze ghost
         // draw a black rectangle
         drawRectARGB32(10 + ghost->point.col * 25, 10 + ghost->point.row * 24, 10 + ghost->point.col * 25 + 23, 10 + ghost->point.row * 24 + 22, 0xFF000000, 1);

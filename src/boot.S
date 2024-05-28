@@ -2,6 +2,7 @@
 
 #define _STACK      0x80000
 #define _EXCSTACK   0x40000
+#define UART_BASE   0xFE201000
 .extern _regs
 .extern main
 .extern dispatch
@@ -14,7 +15,7 @@ _start:
     
     // cpu id is not zero:
 _halt:
-    wfe
+    wfi
     b       _halt
 
 chef_core:  // cpu id == 0

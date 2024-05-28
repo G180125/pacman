@@ -199,7 +199,7 @@ void wait_msec(unsigned int msVal)
     // Read the current counter value
     asm volatile("mrs %0, cntpct_el0" : "=r"(t));
     // Calculate expire value for counter
-    expiredTime = t + f * (msVal/1000.0f);
+    expiredTime = t + f * msVal/1000;
     do
     {
         asm volatile("mrs %0, cntpct_el0" : "=r"(r));
@@ -217,7 +217,7 @@ void set_wait_timer(int set, unsigned int msVal)
         // Read the current counter
         asm volatile("mrs %0, cntpct_el0" : "=r"(t));
         // Calculate expired time:
-        expiredTime = t + f * (msVal/1000.0f);
+        expiredTime = t + f * msVal/1000;
     }
     else
     { /* WAIT FOR TIMER TO EXPIRE */
@@ -227,42 +227,6 @@ void set_wait_timer(int set, unsigned int msVal)
         } while (r < expiredTime);
     }
 }
-
-// void set_wait_timer(int set, unsigned int msVal) {
-//     static unsigned long expiredTime = 0; //declare static to keep value
-//     register unsigned long r, f, t;
-
-//     if (set) {  /*SET TIMER */
-//         // Get the current counter frequency (Hz)
-//         asm volatile ("mrs %0, cntfrq_el0" : "=r"(f));
-
-//         // Read the current counter
-//         asm volatile ("mrs %0, cntpct_el0" : "=r"(t));
-
-//         // Calculate expired time:
-//         expiredTime = t + f * msVal / 1000;
-//         uart_puts("\n");
-//         uart_puts("Expired Time: ");
-//         uart_dec(expiredTime);
-//         uart_puts("\n");
-
-//             // Print current counter frequency
-//         uart_puts("Current counter frequency: ");
-//         uart_dec(f);
-//         uart_puts("\n");
-
-//         // Print current counter value
-//         uart_puts("Current counter value: ");
-//         uart_dec(t);
-//         uart_puts("\n\n");
-//     } 
-//     else { /* WAIT FOR TIMER TO EXPIRE */
-//         do {
-//             asm volatile ("mrs %0, cntpct_el0" : "=r"(r));
-//         } while(r < expiredTime);
-//     }
-// }
-
 
 unsigned long get_current_count() {
     register unsigned long count;
