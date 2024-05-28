@@ -4,7 +4,7 @@
 --> Select correct option to set the value properly 
 */
 
-#define RPI3 //enable when using RPI3 (QEMU emulation/ real board)
+//#define RPI3 //enable when using RPI3 (QEMU emulation/ real board)
 
 #ifdef RPI3 //RPI3
     #define MMIO_BASE       0x3F000000
@@ -44,3 +44,10 @@ typedef unsigned char uint8_t;
 typedef unsigned short int uint16_t;
 typedef unsigned int uint32_t;
 typedef unsigned long int uint64_t;
+
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+
+typedef volatile u32 reg32;

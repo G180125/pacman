@@ -55,5 +55,18 @@
   "C_Cpp_Runner.useLeakSanitizer": false,
   "C_Cpp_Runner.showCompilationTime": false,
   "C_Cpp_Runner.useLinkTimeOptimization": false,
-  "C_Cpp_Runner.msvcSecureNoWarnings": false
+  "C_Cpp_Runner.msvcSecureNoWarnings": false,
+  "files.associations": {
+    "*.embeddedhtml": "html",
+    "executor": "c",
+    "io_context": "c",
+    "timer": "c",
+    "streambuf": "c",
+    "system_error": "c",
+    "timer_and_interrupt.h": "c",
+    "uart0.h": "c",
+    "global.h": "c",
+    "game.h": "c",
+    "frame1-10.h": "c"
+  }
 }

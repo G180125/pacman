@@ -12,7 +12,6 @@ int string_length(const char *str)
     return length;
 }
 
-
 // Comparing both the strings using pointers
 int stringcompare(char *a, char *b)
 {
@@ -41,7 +40,6 @@ int stringcompare(char *a, char *b)
         return 1;
     }
 }
-
 int get_font_index(char character)
 {
     int ascii_value = (int)character;
@@ -94,6 +92,15 @@ unsigned int random_number()
     return seed;
 }
 
+unsigned short lfsr = 0xACE1u;
+unsigned bit;
+
+unsigned random_small_number()
+{
+    bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1;
+    return lfsr = (lfsr >> 1) | (bit << 15);
+}
+
 int distance_square(int x0, int y0, int x1, int y1)
 {
     return (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
@@ -128,10 +135,69 @@ void bubbleSort(PriorityQueue arr[], int n)
     }
 }
 
-void memcpy(void *dest, const void *src, int n) {
-    char *d = (char *)dest;
-    const char *s = (const char *)src;
-    for (int i = 0; i < n; i++) {
-        d[i] = s[i];
+void *memcpy(void *restrict dest, const void *restrict src, size_t len)
+{
+    char *dp = (char *restrict)dest;
+    const char *sp = (const char *restrict)src;
+
+    while (len--)
+    {
+        *dp++ = *sp++;
     }
+
+    return dest;
+}
+
+char* numDisplay(int input)
+{
+    int temp = input;
+    int i = 0;
+    static char str[12];
+    // Clear the buffer before using it
+    clearString(str, sizeof(str));
+    i=0;
+    if (temp == 0)
+    {
+        str[0] = '0';
+        str[1] = '\0';
+    }
+    else
+    {
+        while (temp != 0)
+        {
+            str[i] = (temp % 10) + '0';
+            temp /= 10;
+            i++;
+        }
+        str[i] = '\0';
+        // uart_puts("Return String: ");// return string works
+        //uart_puts("                         "); //
+    }
+    return str;
+}
+
+// Function to clear a string in a buffer
+void clearString(char* str, int bufferSize) {
+    for (int i = 0; i < bufferSize; i++) {
+        str[i] = '\0';
+    }
+}
+
+void copyString(char *t, char *s)
+{
+    // (return ASCII value which is True,
+    // therefore will be in the loop
+    // till the condition is False
+    while (*t++ = *s++)
+        ;
+}
+
+char* reverseString(char* str){
+    static char result[100]; // Use a static buffer
+    int length = string_length(str);
+    for (int i = 0; i < length; i++) {
+        result[i] = str[length - 1 - i];
+    }
+    result[length] = '\0';
+    return result;
 }

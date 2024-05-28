@@ -3,6 +3,7 @@
 #include "uart0.h"
 #include "font.h"
 #include "ultility.h"
+#include "framebf.h"
 
 // Use RGBA32 (32 bits for each pixel)
 #define COLOR_DEPTH 32
@@ -10,13 +11,8 @@
 #define PIXEL_ORDER 0
 #define IMAGE_WIDTH 1366
 
-const int FRAME_WIDTH = 640; // Define frame width
-const int FRAME_HEIGHT = 320; // Define frame height
-
-
 //Screen info
 unsigned int width, height, pitch;
-
 
 /* Frame buffer address
  * (declare as pointer of unsigned char to access each byte) */
@@ -81,7 +77,7 @@ void framebf_init()
         uart_hex(mBuf[28]);
         uart_puts("\n");
         uart_puts("Frame Buffer Size (bytes): ");
-        uart_dec(mBuf[29]);
+        uart_hex(mBuf[29]);
         uart_puts("\n");
         width = mBuf[5];  // Actual physical width
         height = mBuf[6]; // Actual physical height
@@ -176,11 +172,23 @@ void drawStringARGB32(int x, int y, char *str, unsigned int attr) {
         offset += FONT_WIDTH; 
     }
 }
+
 void drawImageARGB32(int x, int y, int starting_x_index, int starting_y_index,unsigned long image[]){
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
             int index = IMAGE_WIDTH * (i + starting_y_index)  + j + starting_x_index; 
             drawPixelARGB32(x + j, y + i, image[index]);
+        }
+    }
+}
+
+//---------------Video Frame helper function------------------------------//
+void drawFrameARGB32(unsigned long frame_index[], int x, int y) {
+    // Draw the frame
+    for (int i = 0; i < FRAME_HEIGHT; ++i) {
+        for (int j = 0; j < FRAME_WIDTH; ++j) {
+            int index = FRAME_WIDTH * i + j;
+            drawPixelARGB32(x + j, y + i, frame_index[index]);
         }
     }
 }
@@ -207,8 +215,6 @@ void drawObjectARGB32(int x, int y, int frame_width, int frame_height, unsigned 
     }
 }
 
-
-
 void clearObject(int start_x, int start_y, int width, int height) {
     // Fill the screen with black color
     for (int y = start_y; y < start_y + width; ++y) {
@@ -218,141 +224,16 @@ void clearObject(int start_x, int start_y, int width, int height) {
     }
 }
 
-//---------------Video Frame helper function------------------------------//
-void drawFrameARGB32(unsigned long frame_index[], int x, int y) {
-    // Draw the frame
-    for (int i = 0; i < FRAME_HEIGHT; ++i) {
-        for (int j = 0; j < FRAME_WIDTH; ++j) {
-            int index = FRAME_WIDTH * i + j;
-            drawPixelARGB32(x + j, y + i, frame_index[index]);
-        }
+void displayNumber(int x, int y, int offset, char *input, unsigned int attr)
+{
+    // uart_puts("Input in display number: ");
+    int offset_temp = offset;
+    int count = 1;
+    for (int i = string_length(input) - 1; i >= 0; i--)
+    {
+        drawCharARGB32(x + offset_temp * count, y, input[i], attr);
+        count++;
     }
 }
-
-// Integer to string conversion function
-void int_to_string(int num, char *str) {
-    int i = 0;
-    int is_negative = 0;
-
-    // Handle negative numbers
-    if (num < 0) {
-        is_negative = 1;
-        num = -num;
-    }
-
-    // Generate digits in reverse order
-    do {
-        str[i++] = num % 10 + '0';
-        num /= 10;
-    } while (num);
-
-    // Add negative sign if needed
-    if (is_negative) {
-        str[i++] = '-';
-    }
-
-    // Terminate the string
-    str[i] = '\0';
-
-    // Reverse the string
-    int len = i;
-    for (int j = 0; j < len / 2; j++) {
-        char temp = str[j];
-        str[j] = str[len - j - 1];
-        str[len - j - 1] = temp;
-    }
-}
-typedef int bool;
-#define true 1
-#define false 0
-
-/// Redefine bool, true, and false without using <stdbool.h>
-typedef int bool;
-#define true 1
-#define false 0
-#define va_start(args, param) (args = (va_list)&param + sizeof(param))
-#define va_arg(args, type) (*(type*)((args += sizeof(type)) - sizeof(type)))
-#define va_end(args) (args = NULL)
-
-typedef char* va_list;
-// Function to detect frame names like frame1 to frame15
-// Define va_start, va_arg, and va_end macros
-#define va_start(args, param) (args = (va_list)&param + sizeof(param))
-#define va_arg(args, type) (*(type*)((args += sizeof(type)) - sizeof(type)))
-#define va_end(args) (args = NULL)
-
-// Function to detect frame names like frame1 to frame15
-bool isFrameName(const char *str) {
-    if (str == NULL || str[0] != 'f' || str[1] != 'r' || str[2] != 'a' || str[3] != 'm' || str[4] != 'e') {
-        return false;
-    }
-
-    int i = 5;
-    while (str[i] != '\0') {
-        if (str[i] < '0' || str[i] > '9') {
-            return false;
-        }
-        i++;
-    }
-
-    return true;
-}
-
-// Implementation of sprintf
-int sprintf(char *str, const char *format, ...) {
-    int chars_written = 0;
-    int arg_int;
-    bool is_reading_num = false;
-
-    // Initialize the variable arguments
-    va_list args;
-    va_start(args, format);
-
-    while (*format != '\0') {
-        if (is_reading_num) {
-            if (*format >= '0' && *format <= '9') {
-                // Accumulate the integer argument
-                arg_int = arg_int * 10 + (*format - '0');
-            } else {
-                // Handle the format specifier
-                int num_chars = 0;
-                int temp = arg_int;
-                do {
-                    temp /= 10;
-                    num_chars++;
-                } while (temp != 0);
-
-                temp = arg_int;
-                for (int i = 0; i < num_chars; i++) {
-                    str[chars_written + num_chars - i - 1] = temp % 10 + '0';
-                    temp /= 10;
-                }
-                chars_written += num_chars;
-                is_reading_num = false;
-            }
-        } else {
-            if (*format == '%') {
-                is_reading_num = true;
-                arg_int = va_arg(args, int);
-            } else {
-                str[chars_written] = *format;
-                chars_written++;
-            }
-        }
-        format++;
-    }
-
-    // Add null terminator to the string
-    str[chars_written] = '\0';
-
-    // End the variable arguments processing
-    va_end(args);
-
-    return chars_written;
-}
-
-
-
-
 
 

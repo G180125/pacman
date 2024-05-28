@@ -159,15 +159,17 @@
 
 /* Function prototypes */
 void uart_init();
-void deleteChar();
 void uart_sendc(char c);
 char uart_getc();
 void uart_float(float num);
+void uart_clear();
 void uart_puts(char *s);
 void uart_hex(unsigned int num);
 void uart_dec(int num);
 unsigned int uart_isReadByteReady();
 unsigned char getUart();
-void wait_msec(unsigned int n);
+void wait_msec(unsigned int msVal);
 void set_wait_timer(int set, unsigned int msVal);
 unsigned long get_current_time();
+void clock(int* time, int* last_time);
+void deleteChar();
